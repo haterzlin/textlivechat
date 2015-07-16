@@ -17,6 +17,7 @@ overflow: auto;
 Working with websocked chat_server, ws_url needs to be properly set, so client can go to
 living instance of chat server.
 Variable number of old messages can be set, to view more history.
+User name and room name is set by http parameters user and room
 -->
 
     <div id="messages"></div>
@@ -29,25 +30,65 @@ Variable number of old messages can be set, to view more history.
     </div>
 
     <script type="text/javascript">
-      var ws;
-      var ws_url = 'ws://localhost:8089/';
-      var number_of_old_messages = 15;
-      var last_message_id = 1;
-      var asked_name_and_room = "NO";
-      
-      if (ws == undefined || ws.readyState == WebSocket.CLOSED) {
-              ws = new WebSocket(ws_url);
-      }
+    var ws_url = 'ws://localhost:8089/';
+    var ws = new WebSocket(ws_url);
+    var number_of_old_messages = 15;
+    var last_message_id = 1;
+    // time params for creating connection
+    var interval = 50; // miliseconds between checks
+    var timeout = 5000; // stop trying yo connect after this timeout
+    var timeStarted = Date.now();
+    
+
+    function initialize_websocket() {
+        console.log("succesfully connected to websocket");
+        // mapping events after succesful connection
+        document.body.style.backgroundColor = '#cfc';
+        ws.onerror = function() {
+             display_received_message("error: " + event.error);
+         };
+        ws.onmessage = function(event) {
+              switch (event.data) {
+                  case "Please enter your name:":
+                      ws.send(get_http_param('user'));
+                      break;
+                  case "Please enter room name:":
+                      ws.send(get_http_param('room'));
+                      break;
+                  default:
+                      display_received_message(event.data);
+              }
+        };
+        // connection is initialized and message "enter your name" was send, server is waiting for  response
+        ws.send(get_http_param('user')); 
+    }
+
+    function wait_for_websocket_connection() {
+        if (ws.readyState === 1) {
+            console.log("succesfully connected to websocket");
+            initialize_websocket();
+        }
+        else {
+            if (Date.now() > timeStarted + timeout) {
+                closeSocketAfter();
+                display_received_message("Connection time limit expired.");
+            }
+            else {
+                setTimeout(wait_for_websocket_connection, interval);
+                console.log("waiting for connection to websocket " + Date.now());
+            }
+        }
+    }
 
     function get_http_param(name) {
         if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
             return decodeURIComponent(name[1]);
     }
 
-      function send() {
+    function send() {
          ws.send(document.getElementById("messageinput").value);
          document.getElementById("messageinput").value = "";
-      }
+    }
 
     function display_received_message(message_text) {
         document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
@@ -58,36 +99,22 @@ Variable number of old messages can be set, to view more history.
         }
     }
 
-      function closeSocket() {
-          if (ws.readyState == WebSocket.OPEN) {
-              ws.close();
-              document.getElementById('closeSocketButton').disabled=true;
-              document.getElementById('sendButton').disabled=true;
-          }
-      }
+    function closeSocket() {
+        if (ws.readyState == WebSocket.OPEN) {
+            ws.close();
+            closeSocketAfter();
+        }
+    }
 
-      ws.onopen = function() {
-          document.body.style.backgroundColor = '#cfc';
-      };
-      ws.onclose = function() {
-          document.body.style.backgroundColor = null;
-          document.getElementById('messages').textContent = "";
-      };
-      ws.onerror = function() {
-          display_received_message("error: " + event.error);
-      };
-      ws.onmessage = function(event) {
-          switch (event.data) {
-              case "Please enter your name:":
-                  ws.send(get_http_param('user'));
-                  break;
-              case "Please enter room name:":
-                  ws.send(get_http_param('room'));
-                  break;
-              default:
-                  display_received_message(event.data);
-          }
-      };
+    function closeSocketAfter() {
+        document.getElementById('closeSocketButton').disabled=true;
+        document.getElementById('sendButton').disabled=true;
+        display_received_message("Connection closed.");
+        document.body.style.backgroundColor = null;
+    }
+
+    wait_for_websocket_connection();
+    
     </script>
 
   </body>
