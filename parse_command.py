@@ -29,20 +29,31 @@ def throwDice(x, y, z):
 
 
 def getUserList(roomFile):
+    # returns user list from file
     userList = []
     with open(roomFile, 'r') as f:
         for user in f:
             userList.append(user.strip())
     print " Userlist: " + ", ".join(sorted(userList))
 
+def webrtc(input):
+    """
+    webrtc signaling processing
+    input contains: who sends webrtc signaling request to whom and that request
+    it will be send to that user - don't need to parse it, just send it. Don't need this function
+    """
+    pass
 
 # main
 
 words = sys.argv
 if words[1] == "/getusers":
-    getUserList(words[2])
-elif words[1] == "/webrtc":
-    pass
+    try:
+        getUserList(words[2])
+    except IndexError:
+        print " Internal error: No user file name from main program"
+#elif words[1] == "/webrtc":
+#    webrtc(words[2:])
 elif words[1] == "/dice":
     try:
         throwDice(words[2], words[3], words[4])
@@ -50,4 +61,4 @@ elif words[1] == "/dice":
         print " Bad dice syntax, usage: /dice number_od_dice number_of_dice_sides target_number_for_throw_again"
 
 else:
-    print " ".join(words)
+    print " unknown command " + " ".join(words[1:])
