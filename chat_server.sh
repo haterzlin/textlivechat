@@ -25,9 +25,11 @@ ROOMS_DIR=/var/tmp/ws/rooms
 LAST_MESSAGES=5
 
 # initialization
-echo "Please enter your name:"; read USER
-echo "Please enter room name:"; read ROOM
-# TODO:  ROOM get from URL and USERNAME from SESSION
+USER=${REMOTE_USER} # this is set by apache or other web server, or can be modified to read PHP sessionid from cookie and read username form PHP session storage
+if [ "${USER}" == "" ]; then
+  USER="Anonymous"
+fi
+ROOM=`echo "${PATH_INFO}" |cut -f2 -d"/"`
 ROOM_LOG=${ROOMS_DIR}/${ROOM}.log
 ROOM_USERS=${ROOMS_DIR}/${ROOM}.users
 echo ${USER} >> ${ROOM_USERS}

@@ -23,7 +23,7 @@ def throwDice(x, y, z):
                  results.append(str(value))
                  value = randint(1,int(y))
              results.append(str(value))
-         print " Throws " + str(x) + " " + str(y) + "-sided dice: " + str(", ".join(results))
+         print " Throws " + str(x) + " " + str(y) + "-sided dice, throws again on " + str(z) + ": " + str(", ".join(results))
     except ValueError:
         print " Bad dice syntax, input is not numeric"
 
