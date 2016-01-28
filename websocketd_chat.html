@@ -42,8 +42,7 @@ User name and room name is set by http parameters user and room
     </datalist>
 
     <script type="text/javascript">
-    var ws_url = 'ws://localhost:8089/';
-    var web_url = 'http://localhost/mlich/ws_rooms_dir/';
+    var ws_url = 'ws://localhost:8089/' + get_http_param('room');
     var ws = new WebSocket(ws_url);
     var number_of_old_messages = 15;
     var last_message_id = 1;
@@ -51,51 +50,29 @@ User name and room name is set by http parameters user and room
     var interval = 50; // miliseconds between checks
     var timeout = 5000; // stop trying yo connect after this timeout
     var timeStarted = Date.now();
-    // params for User list update
-    var UserListUpdateInterval = 1; //seconds
-    var UserListLastUpdatedTime = Date.now() ; 
-    UserListLastUpdatedTime--; // to do first list initialization
+    var userListKeyword = "Userlist: ";
 
     // functions for user list
-    function getCurrentUserList(roomname) { 
-            display_received_message(Date.now() +" - " + UserListLastUpdatedTime + " > " + UserListUpdateInterval);
-            UserListLastUpdatedTime = document.getElementById("UserListLastUpdatedTime").innerHTML;
-            if ((Date.now() - UserListLastUpdatedTime) > UserListUpdateInterval) {
-                var xhr; 
-                try { xhr = new XMLHttpRequest(); }                 
-                catch(e) {    
-                    xhr = new ActiveXObject("Microsoft.XMLHTTP");
-                } 
-                xhr.onreadystatechange  = function() { 
-                    if(xhr.readyState  == 4) {
-                        if(xhr.status  == 200) {                  
-                            updateUserList(xhr.responseText);
-                            //alert(xhr.responseText);
-                        } 
-                        else 
-                            display_received_message("Can't download user list, error code " + xhr.status);
-                    }         
-                }; 
-
-                //alert(web_url + roomname + ".users");
-                xhr.open("GET", web_url + roomname + ".users", true); 
-                xhr.send(null);
-                }
-        } 
 
     function updateUserList(userdata) {
+        /***
+           sets two lists, userlist for display purposes and usernames to make writing to users easy
+        ***/
+        console.log("updating user list " + userdata);
         result = '<select name="usernames">\n';
-        result2 = '<h4>User List</h4>\n<div id=\"UserListLastUpdatedTime\">' + Date.now() + '</div><ul>\n';
-        lines = userdata.split(/\r\n|\r|\n/g);
-        for (index = 0, len = lines.length; index < len-1; ++index) {
-            result = result + '<option value="' + (lines[index]) + '"></option>\n';
-            result2 = result2 + '<li>' + lines[index] + '\n';
+        result2 = '<h4>User List</h4>\n<ul>\n';
+        userdata = userdata.slice(userdata.indexOf(userListKeyword) + userListKeyword.length)
+        users = userdata.split(",");
+        for (index = 0, len = users.length; index < len; ++index) {
+            if (users[index] != "") {
+                result = result + '<option value="' + (users[index]) + '"></option>\n';
+                result2 = result2 + '<li>' + users[index] + '\n';
+            }
         }
         result = result + "</select>\n";
         result2 = result2 + "</ul>\n";
         document.getElementById("usernames").innerHTML = result;
         document.getElementById("userlist").innerHTML = result2;
-        display_received_message("User List Updated");
     }
     
     // websocket functions
@@ -110,26 +87,13 @@ User name and room name is set by http parameters user and room
              display_received_message("error: " + event.error);
          };
         ws.onmessage = function(event) {
-              switch (event.data) {
-                  case "Please enter your name:":
-                      ws.send(get_http_param('user'));
-                      break;
-                  case "Please enter room name:":
-                      ws.send(get_http_param('room'));
-                      getCurrentUserList(get_http_param('room'));
-                      UserListLastUpdatedTime = Date.now();
-                      break;
-                  default:
-                      display_received_message(event.data);
-                      //UserListLastUpdatedTime = document.getElementById("UserListLastUpdatedTime").innerHTML;
-                      //display_received_message(Date.now() +" - " + UserListLastUpdatedTime + " > " + UserListUpdateInterval);
-                      if ((event.data.indexOf("joined") > -1 || event.data.indexOf("quit") > -1) ) {
-                           getCurrentUserList(get_http_param('room'));
-                      }
-              }
+            if (event.data.indexOf(userListKeyword) > -1) {
+                updateUserList(event.data);
+            }
+            else {
+                display_received_message(event.data);
+            }
         };
-        // connection is initialized and message "enter your name" was send, server is waiting for  response
-        ws.send(get_http_param('user')); 
     }
 
     function wait_for_websocket_connection() {
@@ -181,41 +145,6 @@ User name and room name is set by http parameters user and room
         display_received_message("Connection closed.");
         document.body.style.backgroundColor = null;
     }
-
-    // functions for user name suggestions (when you are writing to someone specificaly)
-/*
-    function get_user_name_from_message_line(line) {
-        if (line != null) {
-            start_of_name_index = line.innerHTML.indexOf("]") + 1;
-            end_of_name_index = line.innerHTML.indexOf("&gt;");
-            if (end_of_name_index != -1) {
-                result = line.innerHTML.substring(start_of_name_index, end_of_name_index).trim();
-                return result;
-            }
-        }
-        return "";
-    }
-
-
-    function get_talking_users_names() {
-        var current_users = new Array()
-        from = last_message_id - number_of_old_messages;
-        if (from < 0 ) {
-            from = 0;
-        }
-        //console.log( from + " to  " + last_message_id);
-        //for (message_number = from; last_message_id; message_number++) {
-        for (message_number = from; message_number < last_message_id; message_number++) {
-            name = get_user_name_from_message_line(document.getElementById('message' + message_number));
-            if (name != "") {
-                current_users.push(name);
-            }
-        }
-        for (index = 0, len = current_users.length; index < len-1; ++index) {
-            console.log(current_users[index]);
-        }
-    }
-*/
 
     // create connection
     wait_for_websocket_connection();

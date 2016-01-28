@@ -4,7 +4,6 @@
 parse commands for chat server, do whatever is needed and pri
 
  - commands:
-   /getusers returns online user names
    /webrtc to allow webrtc signaling functionality
    /dice throws dice
    message saves message from user to log
@@ -27,15 +26,6 @@ def throwDice(x, y, z):
     except ValueError:
         print " Bad dice syntax, input is not numeric"
 
-
-def getUserList(roomFile):
-    # returns user list from file
-    userList = []
-    with open(roomFile, 'r') as f:
-        for user in f:
-            userList.append(user.strip())
-    print " Userlist: " + ", ".join(sorted(userList))
-
 def webrtc(input):
     """
     webrtc signaling processing
@@ -47,14 +37,7 @@ def webrtc(input):
 # main
 
 words = sys.argv
-if words[1] == "/getusers":
-    try:
-        getUserList(words[2])
-    except IndexError:
-        print " Internal error: No user file name from main program"
-#elif words[1] == "/webrtc":
-#    webrtc(words[2:])
-elif words[1] == "/dice":
+if words[1] == "/dice":
     try:
         throwDice(words[2], words[3], words[4])
     except IndexError:
