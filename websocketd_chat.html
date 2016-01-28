@@ -44,12 +44,29 @@ User name and room name is set by http parameters user and room
     <script type="text/javascript">
     var ws_url = 'ws://localhost:8089/' + get_http_param('room');
     var ws = new WebSocket(ws_url);
+
+    ws.onopen = function() {
+        document.body.style.backgroundColor = '#cfc';
+        document.getElementById('closeSocketButton').disabled=false;
+        document.getElementById('sendButton').disabled=false;
+    }
+    ws.onclose = function() {
+         closeSocket();
+     };
+    ws.onerror = function() {
+         display_received_message("error: " + event.error);
+    };
+    ws.onmessage = function(event) {
+        if (event.data.indexOf(userListKeyword) > -1) {
+            updateUserList(event.data);
+        }
+        else {
+            display_received_message(event.data);
+        }
+    };
+
     var number_of_old_messages = 15;
     var last_message_id = 1;
-    // time params for creating connection
-    var interval = 50; // miliseconds between checks
-    var timeout = 5000; // stop trying yo connect after this timeout
-    var timeStarted = Date.now();
     var userListKeyword = "Userlist: ";
 
     // functions for user list
@@ -74,44 +91,6 @@ User name and room name is set by http parameters user and room
         document.getElementById("usernames").innerHTML = result;
         document.getElementById("userlist").innerHTML = result2;
     }
-    
-    // websocket functions
-
-    function initialize_websocket() {
-        // mapping events after succesful connection
-        document.body.style.backgroundColor = '#cfc';
-        ws.onclose = function() {
-             closeSocket();
-         };
-        ws.onerror = function() {
-             display_received_message("error: " + event.error);
-         };
-        ws.onmessage = function(event) {
-            if (event.data.indexOf(userListKeyword) > -1) {
-                updateUserList(event.data);
-            }
-            else {
-                display_received_message(event.data);
-            }
-        };
-    }
-
-    function wait_for_websocket_connection() {
-        if (ws.readyState === 1) {
-            console.log("succesfully connected to websocket");
-            initialize_websocket();
-        }
-        else {
-            if (Date.now() > timeStarted + timeout) {
-                closeSocketAfter();
-                display_received_message("Connection time limit expired.");
-            }
-            else {
-                setTimeout(wait_for_websocket_connection, interval);
-                console.log("waiting for connection to websocket " + Date.now());
-            }
-        }
-    }
 
     function get_http_param(name) {
         if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
@@ -135,8 +114,8 @@ User name and room name is set by http parameters user and room
     function closeSocket() {
         if (ws.readyState == WebSocket.OPEN) {
             ws.close();
-            closeSocketAfter();
         }
+        closeSocketAfter();
     }
 
     function closeSocketAfter() {
@@ -146,8 +125,7 @@ User name and room name is set by http parameters user and room
         document.body.style.backgroundColor = null;
     }
 
-    // create connection
-    wait_for_websocket_connection();
+
     
     </script>
 

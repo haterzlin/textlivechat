@@ -41,7 +41,7 @@ function roomUsers() {
 }
 
 function lastAnonymousNumber() {
-  # returns this room user list sepated by comma
+  # returns number of last anonymous user
   echo `ls ${USERS_DIR} |grep ${ROOM} | cut -f2 -d"_"  | cut -f2 -d"_" |grep "Anonymous" |cut -c10- |sort -n|tail -1`
 }
 
