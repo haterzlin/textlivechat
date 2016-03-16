@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Websocketd chat with webrtc</title>
+    <style>
+html, body { height: 100%; margin: 0;}
+#messages {
+height: 90%;
+overflow: auto;
+}
+#userlist {
+    width: 10em;
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    background-color: Pink;
+    padding: 1em;
+}
+    </style>
+  </head>
+  <body>
+
+<!-- 
+Working with websocked chat_server, ws_url needs to be properly set, so client can go to
+living instance of chat server.
+Variable number of old messages can be set, to view more history.
+User name and room name is set by http parameters user and room
+-->
+    <div id="userlist"></div>
+    <div id="RTCmessage"></div>
+    <div id="messages"></div>
+    <form onsubmit="send();return false;" onKeyUp="sendToRTCPeers();">
+        Message <input type="text" id="messageinput" autofocus="autofocus" list="usernames" autocomplete="off">
+        <input type="submit" value="Send" id="sendButton">
+    </form>
+    <div>
+        <button type="button" onclick="ws.close();" id="closeSocketButton">Close connection</button>
+    </div>
+    <datalist id="usernames">
+        <select name="usernames">
+        </select>
+    </datalist>
+
+    <script type="text/javascript">
+    var ws_url = 'ws://localhost:8089/' + get_http_param('room');
+    var ws = new WebSocket(ws_url);
+    var number_of_old_messages = 15;
+    var last_message_id = 1;
+    var userListKeyword = "Userlist: ";
+    var welcomeMessage = "Welcome to the chat room";
+    var username = ""; // will be updated after welcomemessage
+
+    // javascript pro různé browsery
+    var RTCPeerConnection = window.RTCPeerConnection ||window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+    var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.RTCIceCandidate;
+    var RTCSessionDescription =  window.RTCSessionDescription || window.mozRTCSessionDescription;
+    navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+    var MyRTCConfiguration = { "iceServers": [{ "urls":"stun:127.0.0.1" }] };
+    var CurrentPeerConnections = new Array();
+    var CurrentRTCDataChannels = new Array();
+
+    ws.onopen = function() {
+        document.body.style.backgroundColor = '#cfc';
+        document.getElementById('closeSocketButton').disabled=false;
+        document.getElementById('sendButton').disabled=false;
+    }
+    ws.onclose = function() {
+        document.getElementById('closeSocketButton').disabled=true;
+        document.getElementById('sendButton').disabled=true;
+        display_received_message("Connection closed.");
+        document.body.style.backgroundColor = null;
+     };
+    ws.onerror = function() {
+         display_received_message("error: " + event.error);
+    };
+    ws.onmessage = function(event) {
+        if (event.data.indexOf(userListKeyword) > -1) {
+            updateUserList(event.data);
+        }
+        else {
+            if (event.data.indexOf(welcomeMessage) > -1 & last_message_id == 1) {
+                username=event.data.split(" ").pop().slice(0, -1);
+                console.log("Username is " + username);
+                setTimeout("sendOffers(getUserList())", 500); // after successful connecting to websocket and update user list, we can connect to RTC
+            }
+            if (event.data.indexOf('"type":"offer","sdp"') > -1 && event.data.indexOf('> ' + username + ': ') > -1) {
+                sendAnswerToOffer(event.data);
+            }
+            if (event.data.indexOf('"candidate":"candidate') > -1 && event.data.indexOf('> ' + username + ': ') > -1) {
+                receivedIceCandidate(event.data);
+            }
+            if (event.data.indexOf('"type":"answer","sdp"') > -1 && event.data.indexOf('> ' + username + ': ') > -1) {
+                receivedAnswerToOffer(event.data);
+            }
+            if ((event.data.indexOf('"type":"answer","sdp"') == -1) & (event.data.indexOf('"type":"offer","sdp"') == -1) & (event.data.indexOf('"candidate":"candidate')  == -1)) {
+                display_received_message(event.data);
+            }
+        }
+    };
+
+    // functions for user list
+
+    function updateUserList(userdata) {
+        /***
+           sets two lists, userlist for display purposes and usernames to make writing to users easy
+        ***/
+        console.log("updating user list " + userdata);
+        result = '<select name="usernames">\n';
+        result2 = '<h4>User List</h4>\n<ul>\n';
+        userdata = userdata.slice(userdata.indexOf(userListKeyword) + userListKeyword.length)
+        users = userdata.split(",");
+        for (index = 0, len = users.length; index < len; ++index) {
+            if (users[index] != "" & users[index] != username) {
+                result = result + '<option value="' + (users[index]) + ': "></option>\n';
+                result2 = result2 + '<li>' + users[index] + '\n';
+            }
+        }
+        result = result + "</select>\n";
+        result2 = result2 + "</ul>\n";
+        document.getElementById("usernames").innerHTML = result;
+        document.getElementById("userlist").innerHTML = result2;
+    }
+
+    function getUserList() {
+        userscollection = document.getElementById('userlist').getElementsByTagName('li');
+        users = [];
+        for (var i = 0; i < userscollection.length; i++) 
+            users.push(userscollection[i].innerHTML.trim());
+        return users;
+    }
+
+    function get_http_param(name) {
+        if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+            return decodeURIComponent(name[1]);
+    }
+
+    function send() {
+         ws.send(document.getElementById("messageinput").value);
+         document.getElementById("messageinput").value = "";
+    }
+
+    function display_received_message(message_text) {
+        document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
+        last_message_id++;
+        if (last_message_id > number_of_old_messages) { // do not display old messages
+            remove_number = last_message_id - number_of_old_messages;
+            document.getElementById('messages').removeChild(document.getElementById("message" + remove_number))
+        }
+    }
+
+    function display_current_RTC_message(message_text) {
+        document.getElementById('RTCmessage').innerHTML = message_text;
+    }
+
+    function sendOffers(users) {
+        // for each in userlist start new RTC connection and send request to initialize it
+        console.log(username + " starting sendoffers " + users);
+        
+        //users = document.getElementById("userlist").getElementsByTagName("li");
+        if (users === undefined || users.length < 1) {
+          console.log(username + " ending sendoffers");
+        }
+        else {
+          user = users[users.length-1];
+          users.splice(users.length-1,1);
+          CurrentPeerConnections[user] = new RTCPeerConnection(MyRTCConfiguration, {optional: [{ RtpDataChannels:true }]});
+          console.log(username + " created RTC object for '" + user + "' in offer");
+          CurrentPeerConnections[user].onicecandidate = function (evt) {
+               if (evt.candidate != null) {
+                   ws.send(user + ": " + JSON.stringify(evt.candidate).replace(/\\r\\n/g,"zalomeni"));
+                   console.log(username + " is sending ice candidate from offer to '" + user + "'");
+               }
+          }
+          CurrentRTCDataChannels[user] = CurrentPeerConnections[user].createDataChannel("livechat" , { reliable: false });
+          console.log(username + " creating datachannel for '" + user + "'");
+          
+          CurrentRTCDataChannels[user].onopen = function (event) {
+              console.log(username + " data channel message to " + user + " opened");
+              //CurrentRTCDataChannels[user].send(username + " says hello to " + user + " via RTC!");
+          };
+          CurrentRTCDataChannels[user].onerror = function(error) {
+              console.log(username + " data channel to " + user + " error: " + error);
+          };
+          CurrentRTCDataChannels[user].onclose = function (event) {
+              console.log(username + " data channel message to " + user + " closed: " + event);
+              console.log(event);
+          };
+          CurrentRTCDataChannels[user].onmessage = function (event) {
+              //console.log("RTC message from " + from + ": " + event.data);
+              display_current_RTC_message(from + " is writing: " + event.data);
+          };
+          
+          CurrentPeerConnections[user].createOffer(function(offer) {
+              CurrentPeerConnections[user].setLocalDescription(new RTCSessionDescription(offer), function() {
+                    // need to replace line break, because server will remove \
+                    ws.send(user + ": " + JSON.stringify(offer).replace(/\\r\\n/g,"zalomeni"));
+                    console.log(username + " is sending offer to RTC with " + user);
+                    sendOffers(users);
+                    },function(err){console.log(err)});
+                },function(err){console.log(err)});
+        }
+    }
+    
+    function sendAnswerToOffer(inputMessage) {
+        from = inputMessage.substring(inputMessage.indexOf("]")+1, inputMessage.indexOf(">")).trim();
+        offer = JSON.parse(inputMessage.substring(inputMessage.indexOf(":",10)+2).replace(/zalomeni/g,"\\r\\n"));
+        //console.log("offer: " + offer);
+        //display_received_message(username + " received offer " + offer + " to RTC from " + from);
+        CurrentPeerConnections[from] = new RTCPeerConnection(MyRTCConfiguration, {optional: [{ RtpDataChannels:true }]});
+        console.log(username + " created RTC object for '" + from + "' in answer");
+        //CurrentRTCDataChannels[from] = CurrentPeerConnections[from].createDataChannel("livechat", { reliable: false });
+        //console.log(username + " creating datachannel for '" + from + "'");
+
+        CurrentPeerConnections[from].ondatachannel = function(event) {
+            console.log(username + " ondatachannel for '" + from + "'");
+            CurrentRTCDataChannels[from] = event.channel;
+            CurrentRTCDataChannels[from].onopen = function (event) {
+              console.log(username + " data channel message to " + from + " opened");
+              //CurrentRTCDataChannels[from].send(username + " says hello to " + from + " via RTC!");
+            };
+            CurrentRTCDataChannels[from].onerror = function(error) {
+              console.log(username + " data channel to " + from + " error: " + error);
+            };
+            CurrentRTCDataChannels[from].onclose = function(event) {
+              console.log(username + " data channel to " + from + " closed: " + event);
+              console.log(event);
+            };
+            CurrentRTCDataChannels[from].onmessage = function (event) {
+              console.log("RTC message from " + from + ": " + event.data);
+              display_current_RTC_message(from + " is writing: " + event.data);
+            };
+        };
+
+        CurrentPeerConnections[from].onicecandidate = function (evt) {
+            if (evt.candidate != null) {
+                console.log(username + " is sending ice candidate from answer for " + from);
+                //console.log("evt.candidate " + JSON.stringify(evt.candidate));
+                ws.send(from + ": " + JSON.stringify(evt.candidate).replace(/\\r\\n/g,"zalomeni"));
+            }
+        }
+          
+        CurrentPeerConnections[from].setRemoteDescription(new RTCSessionDescription(offer), function() {
+            CurrentPeerConnections[from].createAnswer(function(answer) {
+                CurrentPeerConnections[from].setLocalDescription(new RTCSessionDescription(answer), function() {
+                    // send the answer to a server to be forwarded back to the caller (you)
+                    console.log(username + " is sending answer to offer to RTC with " + from);
+                    //console.log("answer: " + JSON.stringify(answer));
+                    ws.send(from + ": " + JSON.stringify(answer).replace(/\\r\\n/g,"zalomeni"));
+                }, function(err){console.log(err)});
+            }, function(err){console.log(err)});
+        }, function(err){console.log(err)});
+    }
+    
+    function receivedIceCandidate(inputMessage) {
+        //event.data.indexOf('> ' + username + ': ') > -1)
+        from = inputMessage.substring(inputMessage.indexOf("]")+1, inputMessage.indexOf(">")).trim();
+        console.log(username + " received ice candidate from '" + from + "'");
+        signal = JSON.parse(inputMessage.substring(inputMessage.indexOf(":",10)+2).replace(/zalomeni/g,"\\r\\n"));
+        CurrentPeerConnections[from].addIceCandidate(new RTCIceCandidate(signal));
+    }
+    
+    function receivedAnswerToOffer(inputMessage) {
+        //event.data.indexOf('> ' + username + ': ') > -1)
+        from = inputMessage.substring(inputMessage.indexOf("]")+1, inputMessage.indexOf(">")).trim();
+        console.log(username + " received answer to offer from '" + from + "'");
+        signal = JSON.parse(inputMessage.substring(inputMessage.indexOf(":",10)+2).replace(/zalomeni/g,"\\r\\n"));
+        CurrentPeerConnections[from].setRemoteDescription(new RTCSessionDescription(signal));
+    }
+    
+    function sendToRTCPeers() {
+       message = document.getElementById("messageinput").value;
+       //if (message[message.length-1] == " ") {
+           for (user in CurrentRTCDataChannels) {
+               if (CurrentRTCDataChannels[user].readyState == "open") {
+                    console.log(username + " is sending RTC message '" + message + "' to user " + user);
+                    CurrentRTCDataChannels[user].send(message);
+               }
+               else {
+                    console.log(username + " is not sending RTC message '" + message + "' to user " + user + " channel is not open");
+               }
+            }
+        //} 
+    }
+    </script>
+
+  </body>
+</html>
