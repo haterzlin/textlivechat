@@ -97,7 +97,17 @@ User name and room name is set by http parameters user and room
                 receivedAnswerToOffer(event.data);
             }
             if ((event.data.indexOf('"type":"answer","sdp"') == -1) & (event.data.indexOf('"type":"offer","sdp"') == -1) & (event.data.indexOf('"candidate":"candidate')  == -1)) {
-                display_received_message(event.data);
+                words = event.data.split(" ");
+                whisperto = words[2].slice(0,-1);
+                whisperfrom = words[1].slice(0,-1);
+                if (getUserList().indexOf(whisperto) != -1) {
+                    if (whisperto == username || whisperfrom == username) {
+                        display_received_message(event.data);
+                    }
+                }
+                else {
+                    display_received_message(event.data);
+                }
             }
         }
     };
@@ -221,7 +231,6 @@ User name and room name is set by http parameters user and room
             };
             CurrentRTCDataChannels[from].onclose = function(event) {
               console.log(username + " data channel to " + from + " closed: " + event);
-              console.log(event);
             };
             CurrentRTCDataChannels[from].onmessage = function (event) {
               console.log("RTC message from " + from + ": " + event.data);
@@ -265,13 +274,28 @@ User name and room name is set by http parameters user and room
     
     function sendToRTCPeers() {
         message = document.getElementById("messageinput").value;
-        for (user in CurrentRTCDataChannels) {
-            if (CurrentRTCDataChannels[user].readyState == "open") {
-                console.log(username + " is sending RTC message '" + message + "' to user " + user);
-                CurrentRTCDataChannels[user].send(message);
+        if (message.length > 0) {
+            words = message.split(" ");
+            whisperto = words[0].slice(0,-1);
+            if (getUserList().indexOf(whisperto) != -1) {
+                if (CurrentRTCDataChannels[whisperto].readyState == "open") {
+                    console.log(username + " is sending RTC whisper message '" + message + "' to user " + whisperto);
+                    CurrentRTCDataChannels[whisperto].send(message);
+                }
+                else {
+                    console.log(username + " is not sending RTC whisper message '" + message + "' to user " + user + " channel is not open");
+                }
             }
             else {
-                console.log(username + " is not sending RTC message '" + message + "' to user " + user + " channel is not open");
+                for (user in CurrentRTCDataChannels) {
+                    if (CurrentRTCDataChannels[user].readyState == "open") {
+                        console.log(username + " is sending RTC message '" + message + "' to user " + user);
+                        CurrentRTCDataChannels[user].send(message);
+                    }
+                    else {
+                        console.log(username + " is not sending RTC message '" + message + "' to user " + user + " channel is not open");
+                    }
+                }
             }
         }
     }
