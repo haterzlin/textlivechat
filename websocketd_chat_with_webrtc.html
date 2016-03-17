@@ -141,6 +141,7 @@ User name and room name is set by http parameters user and room
     }
 
     function display_received_message(message_text) {
+        message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
         last_message_id++;
         if (last_message_id > number_of_old_messages) { // do not display old messages
@@ -150,6 +151,7 @@ User name and room name is set by http parameters user and room
     }
 
     function display_current_RTC_message(message_text) {
+        message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         document.getElementById('RTCmessage').innerHTML = message_text;
     }
 
