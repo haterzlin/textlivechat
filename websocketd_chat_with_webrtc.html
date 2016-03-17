@@ -6,8 +6,8 @@
     <style>
 html, body { height: 100%; margin: 0;}
 #messages {
-height: 90%;
-overflow: auto;
+  height: 90%;
+  overflow: auto;
 }
 #userlist {
     width: 10em;
@@ -16,6 +16,9 @@ overflow: auto;
     right: 1px;
     background-color: Pink;
     padding: 1em;
+}
+#RTCmessage {
+  background-color: lightyellow;
 }
     </style>
   </head>
@@ -159,14 +162,13 @@ User name and room name is set by http parameters user and room
         // for each in userlist start new RTC connection and send request to initialize it
         console.log(username + " starting sendoffers " + users);
         
-        //users = document.getElementById("userlist").getElementsByTagName("li");
         if (users === undefined || users.length < 1) {
           console.log(username + " ending sendoffers");
         }
         else {
           user = users[users.length-1];
           users.splice(users.length-1,1);
-          CurrentPeerConnections[user] = new RTCPeerConnection(MyRTCConfiguration, {optional: [{ RtpDataChannels:true }]});
+          CurrentPeerConnections[user] = new RTCPeerConnection(MyRTCConfiguration);
           console.log(username + " created RTC object for '" + user + "' in offer");
           CurrentPeerConnections[user].onicecandidate = function (evt) {
                if (evt.candidate != null) {
@@ -174,22 +176,19 @@ User name and room name is set by http parameters user and room
                    console.log(username + " is sending ice candidate from offer to '" + user + "'");
                }
           }
-          CurrentRTCDataChannels[user] = CurrentPeerConnections[user].createDataChannel("livechat" , { reliable: false });
+          CurrentRTCDataChannels[user] = CurrentPeerConnections[user].createDataChannel("livechat");
           console.log(username + " creating datachannel for '" + user + "'");
           
           CurrentRTCDataChannels[user].onopen = function (event) {
               console.log(username + " data channel message to " + user + " opened");
-              //CurrentRTCDataChannels[user].send(username + " says hello to " + user + " via RTC!");
           };
           CurrentRTCDataChannels[user].onerror = function(error) {
               console.log(username + " data channel to " + user + " error: " + error);
           };
           CurrentRTCDataChannels[user].onclose = function (event) {
               console.log(username + " data channel message to " + user + " closed: " + event);
-              console.log(event);
           };
           CurrentRTCDataChannels[user].onmessage = function (event) {
-              //console.log("RTC message from " + from + ": " + event.data);
               display_current_RTC_message(from + " is writing: " + event.data);
           };
           
@@ -208,18 +207,14 @@ User name and room name is set by http parameters user and room
         from = inputMessage.substring(inputMessage.indexOf("]")+1, inputMessage.indexOf(">")).trim();
         offer = JSON.parse(inputMessage.substring(inputMessage.indexOf(":",10)+2).replace(/zalomeni/g,"\\r\\n"));
         //console.log("offer: " + offer);
-        //display_received_message(username + " received offer " + offer + " to RTC from " + from);
-        CurrentPeerConnections[from] = new RTCPeerConnection(MyRTCConfiguration, {optional: [{ RtpDataChannels:true }]});
+        CurrentPeerConnections[from] = new RTCPeerConnection(MyRTCConfiguration);
         console.log(username + " created RTC object for '" + from + "' in answer");
-        //CurrentRTCDataChannels[from] = CurrentPeerConnections[from].createDataChannel("livechat", { reliable: false });
-        //console.log(username + " creating datachannel for '" + from + "'");
 
         CurrentPeerConnections[from].ondatachannel = function(event) {
             console.log(username + " ondatachannel for '" + from + "'");
             CurrentRTCDataChannels[from] = event.channel;
             CurrentRTCDataChannels[from].onopen = function (event) {
               console.log(username + " data channel message to " + from + " opened");
-              //CurrentRTCDataChannels[from].send(username + " says hello to " + from + " via RTC!");
             };
             CurrentRTCDataChannels[from].onerror = function(error) {
               console.log(username + " data channel to " + from + " error: " + error);
@@ -255,7 +250,6 @@ User name and room name is set by http parameters user and room
     }
     
     function receivedIceCandidate(inputMessage) {
-        //event.data.indexOf('> ' + username + ': ') > -1)
         from = inputMessage.substring(inputMessage.indexOf("]")+1, inputMessage.indexOf(">")).trim();
         console.log(username + " received ice candidate from '" + from + "'");
         signal = JSON.parse(inputMessage.substring(inputMessage.indexOf(":",10)+2).replace(/zalomeni/g,"\\r\\n"));
@@ -263,7 +257,6 @@ User name and room name is set by http parameters user and room
     }
     
     function receivedAnswerToOffer(inputMessage) {
-        //event.data.indexOf('> ' + username + ': ') > -1)
         from = inputMessage.substring(inputMessage.indexOf("]")+1, inputMessage.indexOf(">")).trim();
         console.log(username + " received answer to offer from '" + from + "'");
         signal = JSON.parse(inputMessage.substring(inputMessage.indexOf(":",10)+2).replace(/zalomeni/g,"\\r\\n"));
@@ -271,18 +264,16 @@ User name and room name is set by http parameters user and room
     }
     
     function sendToRTCPeers() {
-       message = document.getElementById("messageinput").value;
-       //if (message[message.length-1] == " ") {
-           for (user in CurrentRTCDataChannels) {
-               if (CurrentRTCDataChannels[user].readyState == "open") {
-                    console.log(username + " is sending RTC message '" + message + "' to user " + user);
-                    CurrentRTCDataChannels[user].send(message);
-               }
-               else {
-                    console.log(username + " is not sending RTC message '" + message + "' to user " + user + " channel is not open");
-               }
+        message = document.getElementById("messageinput").value;
+        for (user in CurrentRTCDataChannels) {
+            if (CurrentRTCDataChannels[user].readyState == "open") {
+                console.log(username + " is sending RTC message '" + message + "' to user " + user);
+                CurrentRTCDataChannels[user].send(message);
             }
-        //} 
+            else {
+                console.log(username + " is not sending RTC message '" + message + "' to user " + user + " channel is not open");
+            }
+        }
     }
     </script>
 
