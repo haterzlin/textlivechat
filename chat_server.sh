@@ -37,7 +37,10 @@ function givedate() {
 
 function roomUsers() {
   # returns this room user list sepated by comma
-  echo `ls ${USERS_DIR} |grep ${ROOM} | cut -f2 -d"_" |tr "\n" ", "`
+  #echo `ls ${USERS_DIR} |grep ${ROOM} | cut -f2 -d"_" |tr "\n" ", "`
+  for USER in $(ls ${USERS_DIR} |grep ${ROOM}); do
+    printf `echo $USER| cut -f2 -d"_"`:`cat ${USERS_DIR}/$USER`, ;
+  done;
 }
 
 function lastAnonymousNumber() {
@@ -77,6 +80,10 @@ trap 'on_die' TERM SIGHUP SIGINT SIGTERM
 # talking
 tail -n ${LAST_MESSAGES} -f ${ROOM_LOG} --pid=$$ &
 while read MSG; do
+  if [ "`echo ${MSG} |cut -f1 -d' '`" == "/color" ]; then
+    echo `echo ${MSG} |cut -f2 -d' '` > ${USERS_DIR}/${ROOM}_${USER}
+    echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}
+  fi
   if [ "`echo ${MSG} |cut -c1`" == "/" ]; then
     MSG=`python parse_command.py ${MSG}`
   fi

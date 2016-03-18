@@ -53,6 +53,7 @@ User name and room name is set by http parameters user and room
     var userListKeyword = "Userlist: ";
     var welcomeMessage = "Welcome to the chat room";
     var username = ""; // will be updated after welcomemessage
+    var userColors = new Array();
 
     // javascript pro různé browsery
     var RTCPeerConnection = window.RTCPeerConnection ||window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
@@ -124,9 +125,20 @@ User name and room name is set by http parameters user and room
         userdata = userdata.slice(userdata.indexOf(userListKeyword) + userListKeyword.length)
         users = userdata.split(",");
         for (index = 0, len = users.length; index < len; ++index) {
-            if (users[index] != "" & users[index] != username) {
-                result = result + '<option value="' + (users[index]) + ': "></option>\n';
-                result2 = result2 + '<li>' + users[index] + '\n';
+            currentuser = users[index].split(":")[0];
+            currentusercolor = users[index].split(":")[1];
+            if (currentusercolor) {
+                currentusercolor = currentusercolor.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            }
+            else {
+                currentusercolor = "black";
+            }
+            if (currentuser != "") {
+                if (currentuser != username) {
+                    result = result + '<option value="' + currentuser + ': "></option>\n';
+                    result2 = result2 + '<li style="color: ' + currentusercolor +'" >' + currentuser + '\n';
+                }
+                userColors[currentuser] = currentusercolor;
             }
         }
         result = result + "</select>\n";
@@ -154,8 +166,9 @@ User name and room name is set by http parameters user and room
     }
 
     function display_received_message(message_text) {
+        fromuser = message_text.split(">")[0].split(" ")[1];
         message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
+        document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\" style=\"color: " + userColors[fromuser] +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
         last_message_id++;
         if (last_message_id > number_of_old_messages) { // do not display old messages
             remove_number = last_message_id - number_of_old_messages;

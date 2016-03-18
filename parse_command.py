@@ -26,14 +26,6 @@ def throwDice(x, y, z):
     except ValueError:
         print " Bad dice syntax, input is not numeric"
 
-def webrtc(input):
-    """
-    webrtc signaling processing
-    input contains: who sends webrtc signaling request to whom and that request
-    it will be send to that user - don't need to parse it, just send it. Don't need this function
-    """
-    pass
-
 # main
 
 words = sys.argv
@@ -42,6 +34,11 @@ if words[1] == "/dice":
         throwDice(words[2], words[3], words[4])
     except IndexError:
         print " Bad dice syntax, usage: /dice number_od_dice number_of_dice_sides target_number_for_throw_again"
+elif words[1] == "/color":
+    try:
+        print " Changed color to " + str(words[2])
+    except IndexError:
+        print " Not changed color, missing color number"
 
 else:
     print " unknown command " + " ".join(words[1:])
