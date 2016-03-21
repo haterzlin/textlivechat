@@ -54,6 +54,7 @@ User name and room name is set by http parameters user and room
     var welcomeMessage = "Welcome to the chat room";
     var username = ""; // will be updated after welcomemessage
     var userColors = new Array();
+    var ignoreList = new Array();
 
     // javascript pro různé browsery
     var RTCPeerConnection = window.RTCPeerConnection ||window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
@@ -100,14 +101,16 @@ User name and room name is set by http parameters user and room
             if ((event.data.indexOf('"type":"answer","sdp"') == -1) & (event.data.indexOf('"type":"offer","sdp"') == -1) & (event.data.indexOf('"candidate":"candidate')  == -1)) {
                 words = event.data.split(" ");
                 whisperto = words[2].slice(0,-1);
-                whisperfrom = words[1].slice(0,-1);
+                from = words[1].slice(0,-1);
                 if (getUserList().indexOf(whisperto) != -1) {
-                    if (whisperto == username || whisperfrom == username) {
+                    if ((whisperto == username || from == username) & ignoreList.indexOf(from) == -1) {
                         display_received_message(event.data);
                     }
                 }
                 else {
-                    display_received_message(event.data);
+                    if (ignoreList.indexOf(from) ==  -1 ) {
+                        display_received_message(event.data);
+                    }
                 }
             }
         }
@@ -118,6 +121,7 @@ User name and room name is set by http parameters user and room
     function updateUserList(userdata) {
         /***
            sets two lists, userlist for display purposes and usernames to make writing to users easy
+           additionaly it works with ignore list
         ***/
         console.log("updating user list " + userdata);
         result = '<select name="usernames">\n';
@@ -136,7 +140,13 @@ User name and room name is set by http parameters user and room
             if (currentuser != "") {
                 if (currentuser != username) {
                     result = result + '<option value="' + currentuser + ': "></option>\n';
-                    result2 = result2 + '<li style="color: ' + currentusercolor +'" >' + currentuser + '\n';
+                    ignoreIndex = ignoreList.indexOf(currentuser);
+                    if (ignoreIndex == -1) {
+                        result2 = result2 + '<li style="color:  + currentusercolor + " ><span>' + currentuser + '</span> <a title="ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="ignoreUser(\'' + currentuser + '\');">i</a>\n';
+                    }
+                    else {
+                        result2 = result2 + '<li style="color: ' + currentusercolor + ' " ><span>' + currentuser + '</span> <a title="dont ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="dontIgnoreUser(' + currentuser + ');">di</a>\n';
+                    }
                 }
                 userColors[currentuser] = currentusercolor;
             }
@@ -151,8 +161,28 @@ User name and room name is set by http parameters user and room
         userscollection = document.getElementById('userlist').getElementsByTagName('li');
         users = [];
         for (var i = 0; i < userscollection.length; i++) 
-            users.push(userscollection[i].innerHTML.trim());
+            users.push(userscollection[i].firstElementChild.innerHTML.trim());
         return users;
+    }
+
+    function ignoreUser(user) {
+        ignoreList.push(user);
+        ignorelink = document.getElementById("ignore"+user+"link");
+        ignorelink.title="Don't ignore " + user;
+        ignorelink.onclick = function() { dontIgnoreUser(user); };
+        ignorelink.innerHTML = "di";
+        console.log("ignoring " + user);
+        return false;
+    }
+    
+    function dontIgnoreUser(user) {
+        ignoreList.splice(ignoreList.indexOf(user), 1);
+        ignorelink = document.getElementById("ignore"+user+"link");
+        ignorelink.title="Ignore " + user;
+        ignorelink.onclick = function() { ignoreUser(user); };
+        ignorelink.innerHTML = "i";
+        console.log("not ignoring " + user);
+        return false;
     }
 
     function get_http_param(name) {
@@ -177,8 +207,11 @@ User name and room name is set by http parameters user and room
     }
 
     function display_current_RTC_message(message_text) {
+        from = message_text.split(" ")[0];
         message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        document.getElementById('RTCmessage').innerHTML = message_text;
+        if (ignoreList.indexOf(from) ==  -1 ) {
+            document.getElementById('RTCmessage').innerHTML = message_text;
+        }
     }
 
     function sendOffers(users) {
@@ -287,7 +320,7 @@ User name and room name is set by http parameters user and room
     
     function sendToRTCPeers() {
         message = document.getElementById("messageinput").value;
-        if (message.length > 0) {
+        if (message.length > 0 && message[0] != "/") {
             words = message.split(" ");
             whisperto = words[0].slice(0,-1);
             if (getUserList().indexOf(whisperto) != -1) {
