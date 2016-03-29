@@ -75,7 +75,7 @@ on_die() {
   exit 0
 }
 
-trap 'on_die' TERM SIGHUP SIGINT SIGTERM
+trap 'on_die' 0 SIGHUP SIGINT SIGQUIT SIGILL SIGABRT SIGFPE SIGTERM
 
 # talking
 tail -n ${LAST_MESSAGES} -f ${ROOM_LOG} --pid=$$ &
