@@ -49,7 +49,7 @@ function lastAnonymousNumber() {
 }
 
 # initialization
-ROOM=`echo "${PATH_INFO}" |cut -f2 -d"/"`
+ROOM=`echo "${PATH_INFO}" |cut -f2 -d"/"|tr " " "-"|tr "_" "-"`
 ROOM_LOG=${ROOMS_DIR}/${ROOM}.log
 
 USER=${REMOTE_USER} # this is set by apache or other web server, or can be modified to read PHP sessionid from cookie and read username from PHP session storage
