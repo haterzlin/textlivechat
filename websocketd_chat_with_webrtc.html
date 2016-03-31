@@ -35,6 +35,7 @@ User name and room name is set by http parameters user and room
     <div id="messages"></div>
     <form onsubmit="send();return false;" onKeyUp="sendToRTCPeers();">
         Message <input type="text" id="messageinput" autofocus="autofocus" list="usernames" autocomplete="off">
+        <span id="whisperinglabel" style="display: none">whispering</span>
         <input type="submit" value="Send" id="sendButton">
     </form>
     <div>
@@ -193,6 +194,7 @@ User name and room name is set by http parameters user and room
     function send() {
          ws.send(document.getElementById("messageinput").value);
          document.getElementById("messageinput").value = "";
+         document.getElementById("whisperinglabel").style.display = "none";
     }
 
     function display_received_message(message_text) {
@@ -324,6 +326,7 @@ User name and room name is set by http parameters user and room
             words = message.split(" ");
             whisperto = words[0].slice(0,-1);
             if (getUserList().indexOf(whisperto) != -1) {
+                document.getElementById("whisperinglabel").style.display = "inline";
                 if (CurrentRTCDataChannels[whisperto].readyState == "open") {
                     console.log(username + " is sending RTC whisper message '" + message + "' to user " + whisperto);
                     CurrentRTCDataChannels[whisperto].send(message);
@@ -333,6 +336,7 @@ User name and room name is set by http parameters user and room
                 }
             }
             else {
+                document.getElementById("whisperinglabel").style.display = "none";
                 for (user in CurrentRTCDataChannels) {
                     if (CurrentRTCDataChannels[user].readyState == "open") {
                         console.log(username + " is sending RTC message '" + message + "' to user " + user);
