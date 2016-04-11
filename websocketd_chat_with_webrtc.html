@@ -37,6 +37,8 @@ User name and room name is set by http parameters user and room
         Message <input type="text" id="messageinput" autofocus="autofocus" list="usernames" autocomplete="off">
         <span id="whisperinglabel" style="display: none">whispering</span>
         <input type="submit" value="Send" id="sendButton">
+        <a title="insert image" href="#" onclick="insert_image()">ii</a>
+        <a title="insert link" href="#" onclick="insert_link()">il</a>
     </form>
     <div>
         <button type="button" onclick="ws.close();" id="closeSocketButton">Close connection</button>
@@ -197,9 +199,55 @@ User name and room name is set by http parameters user and room
          document.getElementById("whisperinglabel").style.display = "none";
     }
 
+     function convert_images_and_links(input) {
+         while (input.indexOf("{link}") != -1 || input.indexOf("{image}") != -1) {
+             if (input.indexOf("{link}") >= 0) {
+                 startindex = input.indexOf("{link}");
+                 secondindex = input.indexOf(" ", startindex);
+                 if (secondindex == -1) {
+                     secondindex = input.length;
+                 }
+                 firstpart = input.substring(0,startindex);
+                 secondpart = "<a target='_blank' href='" + input.substring(startindex+6, secondindex) + "'>link</a>";
+                 thirdpart = input.substring(secondindex);
+                 input = firstpart + secondpart + thirdpart;
+             }
+             if (input.indexOf("{image}") >= 0) {
+                 startindex = input.indexOf("{image}");
+                 secondindex = input.indexOf(" ", startindex);
+                 if (secondindex == -1) {
+                     secondindex = input.length;
+                 }
+                 firstpart = input.substring(0,startindex);
+                 secondpart = "<img src='" + input.substring(startindex+7, secondindex) + "'>";
+                 thirdpart = input.substring(secondindex);
+                 input = firstpart + secondpart + thirdpart;
+             }
+         }
+         console.log("output is " +  input);
+         return input;
+     }
+     
+     function insert_image() {
+         var image_url = prompt("Enter image url");
+         if (image_url != null) {
+             document.getElementById("messageinput").value = document.getElementById("messageinput").value + "{image}" + image_url;
+         }
+         document.getElementById("messageinput").focus();
+     }
+     
+     function insert_link() {
+         var link_url = prompt("Enter link url");
+         if (link_url != null) {
+             document.getElementById("messageinput").value = document.getElementById("messageinput").value + "{link}" + link_url;
+         }
+         document.getElementById("messageinput").focus();
+     }
+
     function display_received_message(message_text) {
         fromuser = message_text.split(">")[0].split(" ")[1];
         message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        message_text = convert_images_and_links(message_text);
         document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\" style=\"color: " + userColors[fromuser] +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
         last_message_id++;
         if (last_message_id > number_of_old_messages) { // do not display old messages
@@ -211,6 +259,7 @@ User name and room name is set by http parameters user and room
     function display_current_RTC_message(message_text) {
         from = message_text.split(" ")[0];
         message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        message_text = convert_images_and_links(message_text);
         if (ignoreList.indexOf(from) ==  -1 ) {
             document.getElementById('RTCmessage').innerHTML = message_text;
         }
