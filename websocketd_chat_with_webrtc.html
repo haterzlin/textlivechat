@@ -4,22 +4,30 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Websocketd chat with webrtc</title>
     <style>
-html, body { height: 100%; margin: 0;}
+html, body { height: 100%; margin: 0; padding-left: 0.5em; padding-top: 0.5em; background: #faebd7; color: black;}
 #messages {
   height: 90%;
   overflow: auto;
 }
 #userlist {
-    width: 10em;
+    width: 11em;
     position: absolute;
     bottom: 1px;
     right: 1px;
-    background-color: Pink;
+    border: 1px dashed gray;
     padding: 1em;
 }
 #RTCmessage {
   background-color: lightyellow;
 }
+#sendButton { width: 6em; }
+#diceform {position: absolute; top: 0px; right: 0px; margin: 1em; padding: 1em; border: 1px dashed grey; width: 13em; background: #faebd7}
+#diceform input {width: 6em;}
+#closediceform {position: absolute; top: 0px; right: 3px;}
+#colorpicker {width: 28px; height: 24px; margin: 1px; padding: 1px; cursor: pointer;}
+#colorpicker { }
+img {vertical-align: bottom;}
+#disconnecticon {margin-bottom: 1px;}
     </style>
   </head>
   <body>
@@ -35,18 +43,29 @@ User name and room name is set by http parameters user and room
     <div id="messages"></div>
     <form onsubmit="send();return false;" onKeyUp="sendToRTCPeers();">
         Message <input type="text" id="messageinput" autofocus="autofocus" list="usernames" autocomplete="off">
-        <span id="whisperinglabel" style="display: none">whispering</span>
         <input type="submit" value="Send" id="sendButton">
-        <a title="insert image" href="#" onclick="insert_image()">ii</a>
-        <a title="insert link" href="#" onclick="insert_link()">il</a>
+        <a title="Insert image" href="#" onclick="insert_image()"><img title="Insert image" src="icos/image2.svg" height="25px"></a>
+        <a title="Insert link" href="#" onclick="insert_link()"><img title="Insert link" src="icos/link1.svg" height="25px"></a>
+        <a title="Throw dice" href="#" onclick="document.getElementById('diceform').style.display='block'"><img title="Throw dice" src="icos/dice4.png" height="25px"></a>
+        <input id="colorpicker" type="color" onChange="ws.send('/color ' + this.value)">
+        <a title="Disconnect" href="#" onclick="ws.close();"><img title="Disconnect" src="icos/exit.svg" height="25px" id="disconnecticon"></a>
     </form>
-    <div>
-        <button type="button" onclick="ws.close();" id="closeSocketButton">Close connection</button>
-    </div>
     <datalist id="usernames">
         <select name="usernames">
         </select>
     </datalist>
+    <div id="diceform" style="display: none">
+        <h4>Throw the dice!</h4>
+        <div id="closediceform"><a onclick="document.getElementById('diceform').style.display='none';" style="cursor: pointer">x</a></div>
+        <form onsubmit="throw_dice();return false;">
+            <table>
+            <tr><th><label for="dicecount">dice count: </label></th> <td><input type="text" id="dicecount" value="1"></td></tr>
+            <tr><th><label for="dicesides">dice sides: </label></th> <td><input type="text" id="dicesides" value="6"></td></tr>
+            <tr><th><label for="dicerepeat">repeat value: </label></th> <td><input type="text" id="dicerepeat" value="6"></td></tr>
+            <tr><th></th><td><input type="submit" value="Throw"></td></tr>
+            </table>
+        </form>
+    </div>
 
     <script type="text/javascript">
     var ws_url = 'ws://localhost:8089/' + get_http_param('room');
@@ -69,15 +88,13 @@ User name and room name is set by http parameters user and room
     var CurrentRTCDataChannels = new Array();
 
     ws.onopen = function() {
-        document.body.style.backgroundColor = '#cfc';
-        document.getElementById('closeSocketButton').disabled=false;
         document.getElementById('sendButton').disabled=false;
+        document.getElementById('messageinput').disabled=false;
     }
     ws.onclose = function() {
-        document.getElementById('closeSocketButton').disabled=true;
         document.getElementById('sendButton').disabled=true;
+        document.getElementById('messageinput').disabled=true;
         display_received_message("Connection closed.");
-        document.body.style.backgroundColor = null;
      };
     ws.onerror = function() {
          display_received_message("error: " + event.error);
@@ -145,10 +162,10 @@ User name and room name is set by http parameters user and room
                     result = result + '<option value="' + currentuser + ': "></option>\n';
                     ignoreIndex = ignoreList.indexOf(currentuser);
                     if (ignoreIndex == -1) {
-                        result2 = result2 + '<li style="color:  + currentusercolor + " ><span>' + currentuser + '</span> <a title="ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="ignoreUser(\'' + currentuser + '\');">i</a>\n';
+                        result2 = result2 + '<li style="color:  + currentusercolor + " ><span>' + currentuser + '</span> <a title="Ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="ignoreUser(\'' + currentuser + '\');"><img title="Ignore User" src="icos/ok.svg" height="25px"></a>\n';
                     }
                     else {
-                        result2 = result2 + '<li style="color: ' + currentusercolor + ' " ><span>' + currentuser + '</span> <a title="dont ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="dontIgnoreUser(' + currentuser + ');">di</a>\n';
+                        result2 = result2 + '<li style="color: ' + currentusercolor + ' " ><span>' + currentuser + '</span> <a title="Don\'t ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="dontIgnoreUser(' + currentuser + ');"><img title="Don\'t ignore user" src="icos/Righthand.svg" height="25px"></a>\n';
                     }
                 }
                 userColors[currentuser] = currentusercolor;
@@ -173,7 +190,7 @@ User name and room name is set by http parameters user and room
         ignorelink = document.getElementById("ignore"+user+"link");
         ignorelink.title="Don't ignore " + user;
         ignorelink.onclick = function() { dontIgnoreUser(user); };
-        ignorelink.innerHTML = "di";
+        ignorelink.innerHTML = '<img title="Don\'t ignore User" src="icos/Righthand.svg" height="25px">';
         console.log("ignoring " + user);
         return false;
     }
@@ -183,7 +200,7 @@ User name and room name is set by http parameters user and room
         ignorelink = document.getElementById("ignore"+user+"link");
         ignorelink.title="Ignore " + user;
         ignorelink.onclick = function() { ignoreUser(user); };
-        ignorelink.innerHTML = "i";
+        ignorelink.innerHTML = '<img title="Ignore User" src="icos/ok.svg" height="25px">';
         console.log("not ignoring " + user);
         return false;
     }
@@ -196,7 +213,7 @@ User name and room name is set by http parameters user and room
     function send() {
          ws.send(document.getElementById("messageinput").value);
          document.getElementById("messageinput").value = "";
-         document.getElementById("whisperinglabel").style.display = "none";
+         document.getElementById("sendButton").value = "Send";
     }
 
      function convert_images_and_links(input) {
@@ -242,6 +259,10 @@ User name and room name is set by http parameters user and room
              document.getElementById("messageinput").value = document.getElementById("messageinput").value + "{link}" + link_url;
          }
          document.getElementById("messageinput").focus();
+     }
+     
+     function throw_dice() {
+         ws.send("/dice " + document.getElementById("dicecount").value + " " + document.getElementById("dicesides").value + " " + document.getElementById("dicerepeat").value);
      }
 
     function display_received_message(message_text) {
@@ -375,7 +396,7 @@ User name and room name is set by http parameters user and room
             words = message.split(" ");
             whisperto = words[0].slice(0,-1);
             if (getUserList().indexOf(whisperto) != -1) {
-                document.getElementById("whisperinglabel").style.display = "inline";
+                document.getElementById("sendButton").value = "Whisper";
                 if (CurrentRTCDataChannels[whisperto].readyState == "open") {
                     console.log(username + " is sending RTC whisper message '" + message + "' to user " + whisperto);
                     CurrentRTCDataChannels[whisperto].send(message);
@@ -385,7 +406,7 @@ User name and room name is set by http parameters user and room
                 }
             }
             else {
-                document.getElementById("whisperinglabel").style.display = "none";
+                document.getElementById("sendButton").value = "Send";
                 for (user in CurrentRTCDataChannels) {
                     if (CurrentRTCDataChannels[user].readyState == "open") {
                         console.log(username + " is sending RTC message '" + message + "' to user " + user);
@@ -399,6 +420,5 @@ User name and room name is set by http parameters user and room
         }
     }
     </script>
-
   </body>
 </html>
