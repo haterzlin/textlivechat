@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """ 
 parse commands for chat server, do whatever is needed and pri
@@ -27,23 +27,25 @@ def throwDice(x, y, z):
                  results.append(str(value))
                  value = randint(1,int(y))
              results.append(str(value))
-         print printinfo + " Throws " + str(x) + " " + str(y) + "-sided dice, throws again on " + str(z) + ": " + str(", ".join(results))
+         print(printinfo + " Throws " + str(x) + " " + str(y) + "-sided dice, throws again on " + str(z) + ": " + str(", ".join(results)))
     except ValueError:
-        print " Bad dice syntax, input is not numeric"
+        print(" Bad dice syntax, input is not numeric")
 
 # main
 
 words = sys.argv
-if words[1] == "/dice":
-    try:
-        throwDice(words[2], words[3], words[4])
-    except IndexError:
-        print " Bad dice syntax, usage: /dice dice_count number_of_dice_sides target_number_for_throw_again"
-elif words[1] == "/color":
-    try:
-        print " Changed color to " + str(words[2])
-    except IndexError:
-        print " Not changed color, missing color number"
-
+if len(words) > 1:
+    if words[1] == "/dice":
+        try:
+            throwDice(words[2], words[3], words[4])
+        except IndexError:
+            print(" Bad dice syntax, usage: /dice dice_count number_of_dice_sides target_number_for_throw_again")
+    elif words[1] == "/color":
+        try:
+            print(" Changed color to " + str(words[2]))
+        except IndexError:
+            print(" Not changed color, missing color number")
+    else:
+        print(" unknown command " + " ".join(words[1:]))
 else:
-    print " unknown command " + " ".join(words[1:])
+    print(" no command, try /dice or /color ");
