@@ -7,6 +7,7 @@
 html, body { height: 100%; margin: 0; padding-left: 0.5em; padding-top: 0.5em; background: #faebd7; color: black;}
 #messages { height: 90%;overflow: auto;}
 #userlist { width: 11em; position: absolute;  bottom: 1px; right: 1px; border: 1px dashed gray; padding: 1em; background: #faebd7;}
+#userlist ul {list-style-type: none; padding-left: 0px;}
 #RTCmessage {background-color: lightyellow;}
 #sendButton { width: 6em; }
 #diceform {position: absolute; bottom: 10%; right: 45%; margin: 1em; padding: 1em; border: 1px dashed grey; width: 13em; background: #faebd7}
@@ -149,10 +150,10 @@ User name and room name is set by http parameters user and room
                     result = result + '<option value="' + currentuser + ': "></option>\n';
                     ignoreIndex = ignoreList.indexOf(currentuser);
                     if (ignoreIndex == -1) {
-                        result2 = result2 + '<li style="color:  + currentusercolor + " ><span>' + currentuser + '</span> <a title="Ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="ignoreUser(\'' + currentuser + '\');"><img title="Ignore User" src="icos/ok.svg" height="25px"></a>\n';
+                        result2 = result2 + '<li style="color:  + currentusercolor + " ><a title="Ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="ignoreUser(\'' + currentuser + '\');"><img title="Ignore User" src="icos/ok.svg" height="25px"></a> <span>' + currentuser + '</span>\n';
                     }
                     else {
-                        result2 = result2 + '<li style="color: ' + currentusercolor + ' " ><span>' + currentuser + '</span> <a title="Don\'t ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="dontIgnoreUser(' + currentuser + ');"><img title="Don\'t ignore user" src="icos/Righthand.svg" height="25px"></a>\n';
+                        result2 = result2 + '<a title="Don\'t ignore ' + currentuser + '" id="ignore' + currentuser + 'link" href="#" onclick="dontIgnoreUser(' + currentuser + ');"><img title="Don\'t ignore user" src="icos/Righthand.svg" height="25px"></a> <li style="color: ' + currentusercolor + ' " ><span>' + currentuser + '</span>\n';
                     }
                 }
                 userColors[currentuser] = currentusercolor;
