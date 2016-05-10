@@ -53,6 +53,10 @@ ROOM=`echo "${PATH_INFO}" |cut -f2 -d"/"|tr " " "-"|tr "_" "-"`
 ROOM_LOG=${ROOMS_DIR}/${ROOM}.log
 
 USER=${REMOTE_USER} # this is set by apache or other web server, or can be modified to read PHP sessionid from cookie and read username from PHP session storage
+COOKIES=`env|grep "HTTP_COOKIE"`
+USER=`python3 ${BASE_DIR}/authenticate.py "${COOKIES}"`
+COLOR=`echo ${USER} | cut -f2 -d":"`
+USER=`echo ${USER} | cut -f1 -d":"`
 if [ "${USER}" == "" ]; then
   LASTNUMBER=$(lastAnonymousNumber)
   if [ "${LASTNUMBER}" == "" ];then
@@ -62,7 +66,7 @@ if [ "${USER}" == "" ]; then
   fi
 fi
 
-touch ${USERS_DIR}/${ROOM}_${USER}
+echo "${COLOR}" > ${USERS_DIR}/${ROOM}_${USER} # create user file and send color to it
 echo "$(givedate) ${USER} joined the ${ROOM}" >> ${ROOM_LOG}
 echo "$(givedate) Welcome to the chat room ${ROOM} ${USER}!"
 echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}
@@ -85,8 +89,9 @@ while read MSG; do
     echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}
   fi
   if [ "`echo ${MSG} |cut -c1`" == "/" ]; then
-    MSG=`python parse_command.py ${MSG}`
+    MSG=`python ${BASE_DIR}/parse_command.py ${MSG}`
   fi
   echo "$(givedate) ${USER}> ${MSG}" >> ${ROOM_LOG}; 
 done
+
 
