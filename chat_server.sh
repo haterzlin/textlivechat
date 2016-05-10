@@ -38,14 +38,14 @@ function givedate() {
 function roomUsers() {
   # returns this room user list sepated by comma
   #echo `ls ${USERS_DIR} |grep ${ROOM} | cut -f2 -d"_" |tr "\n" ", "`
-  for USER in $(ls ${USERS_DIR} |grep ${ROOM}); do
+  for USER in $(ls ${USERS_DIR} |grep "^${ROOM}_"); do
     printf `echo $USER| cut -f2 -d"_"`:`cat ${USERS_DIR}/$USER`, ;
   done;
 }
 
 function lastAnonymousNumber() {
   # returns number of last anonymous user
-  echo `ls ${USERS_DIR} |grep ${ROOM} | cut -f2 -d"_"  | cut -f2 -d"_" |grep "Anonymous" |cut -c10- |sort -n|tail -1`
+  echo `ls ${USERS_DIR} |grep "^${ROOM}_" | cut -f2 -d"_"  | cut -f2 -d"_" |grep "Anonymous" |cut -c10- |sort -n|tail -1`
 }
 
 # initialization
