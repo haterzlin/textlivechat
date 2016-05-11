@@ -169,7 +169,7 @@ User name and room name is set by http parameters user and room
         userscollection = document.getElementById('userlist').getElementsByTagName('li');
         users = [];
         for (var i = 0; i < userscollection.length; i++) 
-            users.push(userscollection[i].firstElementChild.innerHTML.trim());
+            users.push(userscollection[i].children[1].innerHTML.trim());
         return users;
     }
 
