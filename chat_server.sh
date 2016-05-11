@@ -84,6 +84,10 @@ trap 'on_die' 0 SIGHUP SIGINT SIGQUIT SIGILL SIGABRT SIGFPE SIGTERM
 # talking
 tail -n ${LAST_MESSAGES} -f ${ROOM_LOG} --pid=$$ &
 while read MSG; do
+  if [ ! -f "${USERS_DIR}/${ROOM}_${USER}" ]; then
+    echo "You (${USER}) were logged off this room (${ROOM}) in another session."
+    exit
+  fi
   if [ "`echo ${MSG} |cut -f1 -d' '`" == "/color" ]; then
     echo `echo ${MSG} |cut -f2 -d' '` > ${USERS_DIR}/${ROOM}_${USER}
     echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}
