@@ -305,7 +305,7 @@ User name and room name is set by http parameters user and room
               console.log(username + " data channel message to " + user + " closed: " + event);
           };
           CurrentRTCDataChannels[user].onmessage = function (event) {
-              display_current_RTC_message(from + " is writing: " + event.data);
+              display_current_RTC_message(user + " is writing: " + event.data);
           };
           
           CurrentPeerConnections[user].createOffer(function(offer) {
