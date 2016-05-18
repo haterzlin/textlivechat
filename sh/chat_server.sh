@@ -24,7 +24,8 @@
 #/path/to/websocketd --port=${PORT} /path/to/chat_server.sh
 
 # variables
-BASE_DIR=/var/tmp/ws
+#BASE_DIR=/app/iwad/websocket_chat_server
+BASE_DIR=`grep BASE_DIR /home/chat/conf/websocket_chat_server.ini |head -1 |cut -f2 -d"="`
 ROOMS_DIR=${BASE_DIR}/rooms
 USERS_DIR=${BASE_DIR}/users
 LAST_MESSAGES=20
@@ -54,7 +55,7 @@ ROOM_LOG=${ROOMS_DIR}/${ROOM}.log
 
 USER=${REMOTE_USER} # this is set by apache or other web server, or can be modified to read PHP sessionid from cookie and read username from PHP session storage
 COOKIES=`env|grep "HTTP_COOKIE"`
-USER=`python3 ${BASE_DIR}/authenticate.py "${COOKIES}"`
+USER=`python3 ${BASE_DIR}/py/authenticate.py "${COOKIES}"`
 COLOR=`echo ${USER} | cut -f2 -d":"`
 USER=`echo ${USER} | cut -f1 -d":"`
 if [ "${USER}" == "" ]; then
@@ -66,7 +67,7 @@ if [ "${USER}" == "" ]; then
   fi
 fi
 
-echo "${COLOR}" > ${USERS_DIR}/${ROOM}_${USER} # create user file and send color to it
+echo "${COLOR}" > ${USERS_DIR}/${ROOM}_${USER} # create file and send user color to it
 echo "$(givedate) ${USER} joined the ${ROOM}" >> ${ROOM_LOG}
 echo "$(givedate) Welcome to the chat room ${ROOM} ${USER}!"
 echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}
@@ -93,9 +94,7 @@ while read MSG; do
     echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}
   fi
   if [ "`echo ${MSG} |cut -c1`" == "/" ]; then
-    MSG=`python ${BASE_DIR}/parse_command.py ${MSG}`
+    MSG=`python ${BASE_DIR}/py/parse_command.py ${MSG}`
   fi
-  echo "$(givedate) ${USER}> ${MSG}" >> ${ROOM_LOG}; 
+  echo "$(givedate) ${USER}> ${MSG}" >> ${ROOM_LOG};
 done
-
-
