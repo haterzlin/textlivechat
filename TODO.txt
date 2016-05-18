@@ -1,6 +1,5 @@
 - authentication is not secure, need add trusted CA to keystore and remove ignore options
 - write authentication errors to log file
-- make general config file
 - make css files
 - make js file
 - room_list.php

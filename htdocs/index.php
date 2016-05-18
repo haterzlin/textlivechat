@@ -55,8 +55,13 @@ User name and room name is set by http parameters user and room
         </form>
     </div>
 
+<?php
+$config=parse_ini_file("/app/iwad/conf/websocket_chat_server.ini", true);
+?>
+
     <script type="text/javascript">
-    var ws_url = 'ws://localhost:8089/' + get_http_param('room');
+    var ice_url = '<?php echo $config["global"]["ICE_SERVER_DNS"]; ?>';
+    var ws_url = '<?php echo $config["global"]["WEBSOCKETD_SERVER_URL"]; ?>' + get_http_param('room');
     var ws = new WebSocket(ws_url);
     var number_of_old_messages = 15;
     var last_message_id = 1;
@@ -71,7 +76,8 @@ User name and room name is set by http parameters user and room
     var RTCIceCandidate = window.RTCIceCandidate || window.mozRTCIceCandidate || window.RTCIceCandidate;
     var RTCSessionDescription =  window.RTCSessionDescription || window.mozRTCSessionDescription;
     navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
-    var MyRTCConfiguration = { "iceServers": [{ "urls":"stun:127.0.0.1" }] };
+    var MyRTCConfiguration = { "iceServers": [{ "urls":"stun:" + ice_url }] };
+
     var CurrentPeerConnections = new Array();
     var CurrentRTCDataChannels = new Array();
 
