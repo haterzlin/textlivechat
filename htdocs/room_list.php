@@ -3,16 +3,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Room list</title>
-    <style>
-html, body { height: 100%; margin: 0; padding-left: 0.5em; padding-top: 0.5em; background: #faebd7; color: black;}
-    </style>
+    <link rel="stylesheet" type="text/css" href="theme.css">
   </head>
   <body>
   <h1>Room list</h1>
     <table>
       <tr><th>name</th><th>description</th><th>users</th></tr>
 <?php
-$config=parse_ini_file("/home/chat/conf/websocket_chat_server.ini", true);
+$config=parse_ini_file("/app/iwad/conf/websocket_chat_server.ini", true);
 $users = scandir($config["global"]["BASE_DIR"]."/users");
 sort($users);
 $old = "";
@@ -42,4 +40,3 @@ foreach ($rooms as $name => $usernames) {
     </table>
   </body>
 </html>
-
