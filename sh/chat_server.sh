@@ -25,7 +25,9 @@
 
 # variables
 #BASE_DIR=/app/iwad/websocket_chat_server
-BASE_DIR=`grep BASE_DIR /home/chat/conf/websocket_chat_server.ini |head -1 |cut -f2 -d"="`
+CONFIG_FILE=/home/chat/conf/websocket_chat_server.ini
+export LANG=`grep LANG $CONFIG_FILE |head -1 |cut -f2 -d"="`
+BASE_DIR=`grep BASE_DIR $CONFIG_FILE |head -1 |cut -f2 -d"="`
 ROOMS_DIR=${BASE_DIR}/rooms
 USERS_DIR=${BASE_DIR}/users
 LAST_MESSAGES=20

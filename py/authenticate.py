@@ -2,7 +2,7 @@
 
 import sys
 import requests
-from unidecode import unidecode
+#from unidecode import unidecode
 import configparser
 
 config = configparser.ConfigParser()
@@ -51,6 +51,6 @@ try:
 except IndexError:
     pass
 
-print(unidecode(user).replace(" ", ""));
-#print(user.replace(" ", ""));
+#print(unidecode(user).replace(" ", ""));
+print(user.replace(" ", ""));
 
