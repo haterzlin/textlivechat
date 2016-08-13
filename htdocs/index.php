@@ -23,7 +23,7 @@ User name and room name is set by http parameters user and room
         <a title="Insert image" href="#" onclick="insert_image()"><img title="Insert image" src="icos/image2.svg" height="25px"></a>
         <a title="Insert link" href="#" onclick="insert_link()"><img title="Insert link" src="icos/link1.svg" height="25px"></a>
         <a title="Throw dice" href="#" onclick="document.getElementById('diceform').style.display='block'"><img title="Throw dice" src="icos/dice4.png" height="25px"></a>
-        <input id="colorpicker" type="color" onChange="ws.send('/color ' + this.value)">
+        <input title="Choose color" id="colorpicker" type="color" onChange="ws.send('/color ' + this.value)">
         <a title="Disconnect" href="#" onclick="ws.close();"><img title="Disconnect" src="icos/exit.svg" height="25px" id="disconnecticon"></a>
     </form>
     <datalist id="usernames">
