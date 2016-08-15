@@ -167,6 +167,7 @@
                }
           }
           CurrentRTCDataChannels[user] = CurrentPeerConnections[user].createDataChannel("livechat");
+          CurrentRTCDataChannels[user].foruser = user;
           console.log(username + " creating datachannel for '" + user + "'");
           
           CurrentRTCDataChannels[user].onopen = function (event) {
@@ -179,7 +180,7 @@
               console.log(username + " data channel message to " + user + " closed: " + event);
           };
           CurrentRTCDataChannels[user].onmessage = function (event) {
-              display_current_RTC_message(user + " is writing: " + event.data);
+              display_current_RTC_message(this.foruser + " is writing: " + event.data);
           };
           
           CurrentPeerConnections[user].createOffer(function(offer) {
@@ -203,6 +204,7 @@
         CurrentPeerConnections[from].ondatachannel = function(event) {
             console.log(username + " ondatachannel for '" + from + "'");
             CurrentRTCDataChannels[from] = event.channel;
+            CurrentRTCDataChannels[from].foruser = from;
             CurrentRTCDataChannels[from].onopen = function (event) {
               console.log(username + " data channel message to " + from + " opened");
             };
@@ -213,8 +215,9 @@
               console.log(username + " data channel to " + from + " closed: " + event);
             };
             CurrentRTCDataChannels[from].onmessage = function (event) {
+              //console.log(event.toString());
               console.log("RTC message from " + from + ": " + event.data);
-              display_current_RTC_message(from + " is writing: " + event.data);
+              display_current_RTC_message(this.foruser + " is writing: " + event.data);
             };
         };
 

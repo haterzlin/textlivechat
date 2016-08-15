@@ -1,5 +1,4 @@
 - authentication is not secure, need add trusted CA to keystore and remove ignore options
-- who is currently writing is not correct, there is some bug
 
 - write authentication errors to log file
 - inserting images and links is not secure
@@ -8,3 +7,4 @@
 - incoming new message sound
 - emoticons
 - set username number for current room if there is same user
+- change color button is not same in firefox and chrome
