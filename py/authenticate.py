@@ -12,6 +12,7 @@ user = ""
 attributes = {}
 attributename = ""
 cookievalue = ""
+cacerts = config["global"]["BASE_DIR"] + "/conf/cacerts"
 webserviceurl = config["global"]["AUTHENTIZATION_WEBSERVICE_URL"]
 cookiename = config["global"]["AUTHENTIZATION_COOKIENAME"]
 try:
@@ -25,7 +26,7 @@ for line in cookielines:
 
 try:
     #print("trying authenticate to " + webserviceurl + " with " + cookiename + " = " + cookievalue)
-    r = requests.get(webserviceurl, cookies={cookiename: cookievalue}, verify=False)
+    r = requests.get(webserviceurl, cookies={cookiename: cookievalue}, verify=cacerts)
     #print(r.status_code)
     if r.status_code == 200:
         lines = r.text.split("\n")
