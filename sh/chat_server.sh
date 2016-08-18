@@ -46,26 +46,30 @@ function roomUsers() {
   done;
 }
 
-function lastAnonymousNumber() {
-  # returns number of last anonymous user
-  echo `ls ${USERS_DIR} |grep "^${ROOM}_" | cut -f2 -d"_"  | cut -f2 -d"_" |grep "Anonymous" |cut -c10- |sort -n|tail -1`
+function lastUserNumber() {
+  # returns number of last user $1
+  CHARS=`echo -n ${1} |wc -c`
+  CHARS=$((${CHARS} + 1))
+  echo `ls ${USERS_DIR} |grep "^${ROOM}_" | cut -f2 -d"_"  | cut -f2 -d"_" |grep "${1}" |cut -c${CHARS}- |sort -n|tail -1`
 }
 
 # initialization
 ROOM=`echo "${PATH_INFO}" |cut -f2 -d"/"|tr " " "-"|tr "_" "-"`
 ROOM_LOG=${ROOMS_DIR}/${ROOM}.log
 
-USER=${REMOTE_USER} # this is set by apache or other web server, or can be modified to read PHP sessionid from cookie and read username from PHP session storage
 COOKIES=`env|grep "HTTP_COOKIE"`
 USER=`python3 ${BASE_DIR}/py/authenticate.py "${COOKIES}"`
+if [ "${USER}" == "" ]; then
+  USER="Anonymous:Gray"
+fi
 COLOR=`echo ${USER} | cut -f2 -d":"`
 USER=`echo ${USER} | cut -f1 -d":"`
-if [ "${USER}" == "" ]; then
-  LASTNUMBER=$(lastAnonymousNumber)
+if [[ $(roomUsers) == *"${USER}"* ]]; then
+  LASTNUMBER=$(lastUserNumber ${USER})
   if [ "${LASTNUMBER}" == "" ];then
-    USER="Anonymous0"
+    USER="${USER}1"
   else
-    USER="Anonymous`expr ${LASTNUMBER} + 1`"
+    USER="${USER}`expr ${LASTNUMBER} + 1`"
   fi
 fi
 
@@ -87,10 +91,6 @@ trap 'on_die' 0 SIGHUP SIGINT SIGQUIT SIGILL SIGABRT SIGFPE SIGTERM
 # talking
 tail -n ${LAST_MESSAGES} -f ${ROOM_LOG} --pid=$$ &
 while read MSG; do
-  if [ ! -f "${USERS_DIR}/${ROOM}_${USER}" ]; then
-    echo "You (${USER}) were logged off this room (${ROOM}) in another session."
-    exit
-  fi
   if [ "`echo ${MSG} |cut -f1 -d' '`" == "/color" ]; then
     echo `echo ${MSG} |cut -f2 -d' '` > ${USERS_DIR}/${ROOM}_${USER}
     echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}

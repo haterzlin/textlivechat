@@ -4,5 +4,4 @@
 - view_history.php
 - incoming new message sound
 - emoticons
-- set username number for current room if there is same user
 - change color button is not same in firefox and chrome
