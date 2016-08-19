@@ -132,6 +132,7 @@
         message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         message_text = convert_images_and_links(message_text);
         document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\" style=\"color: " + userColors[fromuser] +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
+        notify(message_text);
         last_message_id++;
         if (last_message_id > number_of_old_messages) { // do not display old messages
             remove_number = last_message_id - number_of_old_messages;
@@ -284,3 +285,26 @@
             }
         }
     }
+    
+  function sendNotification(message) {
+    if (document.hidden) {
+      var n = new Notification("New chat message", { body: message.substring(13,53) + "..." });
+      setTimeout(n.close.bind(n), 5000);
+    }
+  }
+ 
+  function notify(message) {
+    if (Notification.permission == "granted") {
+            sendNotification(message);
+    }
+    else {
+        if (Notification.permission != "denied") {
+            Notification.requestPermission(function (permission) {
+                if (permission === "granted") {
+                    sendNotification(message);
+                }
+            });
+           
+       }
+    }
+  }
