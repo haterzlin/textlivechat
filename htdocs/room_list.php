@@ -10,7 +10,7 @@
     <table>
       <tr><th>name</th><th>description</th><th>users</th></tr>
 <?php
-$config=parse_ini_file("/app/iwad/conf/websocket_chat_server.ini", true);
+$config=parse_ini_file("conf/websocket_chat_server.ini", true);
 $users = scandir($config["global"]["BASE_DIR"]."/users");
 sort($users);
 $old = "";
@@ -34,9 +34,12 @@ foreach ($config["room descriptions"] as $roomname => $description ) {
 }
 
 foreach ($rooms as $name => $usernames) {
-    echo "<tr><td><a title=\"Enter\" href=\"index.html?room=".$name."\">".$name."</a></td><td>".$config["room descriptions"][$name]."</td><td>".implode(", ",$usernames)."</td></tr>\n";
+    echo "<tr><td><a title=\"Enter\" href=\"index.php?room=".$name."\">".$name."</a></td><td>".$config["room descriptions"][$name]."</td><td>".implode(", ",$usernames)."</td></tr>\n";
 }
 ?>
     </table>
+
+  <p><a href="room_list_historical.php">Room history</a></p>
   </body>
 </html>
+

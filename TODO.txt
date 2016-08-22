@@ -1,6 +1,4 @@
 - write authentication errors to log file
 - inserting images and links is not secure
-- room_list.php
-- view_history.php
 - emoticons
 - change color button is not same in firefox and chrome
