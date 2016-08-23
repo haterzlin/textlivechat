@@ -87,7 +87,15 @@
                      secondindex = input.length;
                  }
                  firstpart = input.substring(0,startindex);
-                 secondpart = "<a target='_blank' href='" + input.substring(startindex+6, secondindex) + "'>link</a>";
+                 url = input.substring(startindex+6, secondindex);
+                 url1 = url.substring(url.indexOf("//") + 2);
+                 inputdomain = url1.substring(0, url1.indexOf("/"));
+                 if (document.domain == inputdomain) {
+                     secondpart = "<a target='_blank' href='" + url + "'>link</a>";
+                 }
+                 else {
+                     secondpart = "<a class=\"external_link\" title=\"external link, take care\" target='_blank' href='" + url + "'>link</a>";
+                 }
                  thirdpart = input.substring(secondindex);
                  input = firstpart + secondpart + thirdpart;
              }
@@ -98,7 +106,15 @@
                      secondindex = input.length;
                  }
                  firstpart = input.substring(0,startindex);
-                 secondpart = "<img src='" + input.substring(startindex+7, secondindex) + "'>";
+                 url = input.substring(startindex+7, secondindex);
+                 url1 = url.substring(url.indexOf("//") + 2);
+                 inputdomain = url1.substring(0, url1.indexOf("/"));
+                 if (document.domain == inputdomain) {
+                     secondpart = "<img src='" + url + "'>";
+                 } 
+                 else {
+                     secondpart = "<a class=\"external_image\" title=\"external image, take care\" target='_blank' href='" + url + "'>external image</a>";
+                 }
                  thirdpart = input.substring(secondindex);
                  input = firstpart + secondpart + thirdpart;
              }
