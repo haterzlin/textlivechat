@@ -30,6 +30,7 @@ export LANG=`grep LANG $CONFIG_FILE |head -1 |cut -f2 -d"="`
 BASE_DIR=`grep BASE_DIR $CONFIG_FILE |head -1 |cut -f2 -d"="`
 ROOMS_DIR=${BASE_DIR}/rooms
 USERS_DIR=${BASE_DIR}/users
+AUTH_LOG_FILE=${BASE_DIR}/log/authentization.log
 LAST_MESSAGES=20
 
 #functions
@@ -72,6 +73,8 @@ if [[ $(roomUsers) == *"${USER}"* ]]; then
     USER="${USER}`expr ${LASTNUMBER} + 1`"
   fi
 fi
+
+echo `date +"%Y-%m-%d_%H:%M:%S"` ${REMOTE_ADDR} ${USER} >> ${AUTH_LOG_FILE}
 
 echo "${COLOR}" > ${USERS_DIR}/${ROOM}_${USER} # create file and send user color to it
 echo "$(givedate) ${USER} joined the ${ROOM}" >> ${ROOM_LOG}
