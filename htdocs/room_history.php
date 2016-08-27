@@ -10,6 +10,9 @@ echo "    <title>Room history - ".htmlentities($_GET["file"])."</title>";
   <body>
 <?php
 echo "  <h1>Room history - ".htmlentities($_GET["file"])."</h1>";
+?>
+  <menu><li><a href="room_create.php">New</a><li><a href="room_list.php">List</a><li><a href="room_list_historical.php">History</a></menu>
+<?php
 $config=parse_ini_file("conf/websocket_chat_server.ini", true);
 $roomsdir = scandir($config["global"]["BASE_DIR"]."/rooms");
 
@@ -27,7 +30,7 @@ if (in_array($_GET["file"], $roomsdir)) {
   } 
 }
 else {
-  echo "  <script>windows.location = \"room_list_historical.php\"; </script>";
+  header("Location: room_list_historical.php");
 }
 
 ?>
