@@ -78,48 +78,72 @@
          document.getElementById("sendButton").value = "Send";
     }
 
-     function convert_images_and_links(input) {
-         while (input.indexOf("{link}") != -1 || input.indexOf("{image}") != -1) {
-             if (input.indexOf("{link}") >= 0) {
-                 startindex = input.indexOf("{link}");
-                 secondindex = input.indexOf(" ", startindex);
-                 if (secondindex == -1) {
-                     secondindex = input.length;
-                 }
-                 firstpart = input.substring(0,startindex);
-                 url = input.substring(startindex+6, secondindex);
-                 url1 = url.substring(url.indexOf("//") + 2);
-                 inputdomain = url1.substring(0, url1.indexOf("/"));
-                 if (document.domain == inputdomain) {
-                     secondpart = "<a target='_blank' href='" + url + "'>link</a>";
-                 }
-                 else {
-                     secondpart = "<a class=\"external_link\" title=\"external link, take care\" target='_blank' href='" + url + "'>link</a>";
-                 }
-                 thirdpart = input.substring(secondindex);
-                 input = firstpart + secondpart + thirdpart;
-             }
-             if (input.indexOf("{image}") >= 0) {
-                 startindex = input.indexOf("{image}");
-                 secondindex = input.indexOf(" ", startindex);
-                 if (secondindex == -1) {
-                     secondindex = input.length;
-                 }
-                 firstpart = input.substring(0,startindex);
-                 url = input.substring(startindex+7, secondindex);
-                 url1 = url.substring(url.indexOf("//") + 2);
-                 inputdomain = url1.substring(0, url1.indexOf("/"));
-                 if (document.domain == inputdomain) {
-                     secondpart = "<img src='" + url + "'>";
-                 } 
-                 else {
-                     secondpart = "<a class=\"external_image\" title=\"external image, take care\" target='_blank' href='" + url + "'>external image</a>";
-                 }
-                 thirdpart = input.substring(secondindex);
-                 input = firstpart + secondpart + thirdpart;
-             }
-         }
-         console.log("output is " +  input);
+    function convert_images_to_html(input) {
+        while (input.indexOf("{image}") != -1) {
+           startindex = input.indexOf("{image}");
+           secondindex = input.indexOf(" ", startindex);
+           if (secondindex == -1) {
+               secondindex = input.length;
+           }
+           firstpart = input.substring(0,startindex);
+           url = input.substring(startindex+7, secondindex);
+           url1 = url.substring(url.indexOf("//") + 2);
+           inputdomain = url1.substring(0, url1.indexOf("/"));
+           if (document.domain == inputdomain) {
+               secondpart = "<img src='" + url + "'>";
+           }
+           else {
+               secondpart = "<a class=\"external_image\" title=\"exter    nal image, take care\" target='_blank' href='" + url + "'>external image</a>    ";
+           }
+           thirdpart = input.substring(secondindex);
+           input = firstpart + secondpart + thirdpart;
+        }
+        return input;
+    }
+
+    function convert_links_to_html(input) {
+        while (input.indexOf("{link}") != -1) {
+           startindex = input.indexOf("{link}");
+           secondindex = input.indexOf(" ", startindex);
+           if (secondindex == -1) {
+               secondindex = input.length;
+           }
+           firstpart = input.substring(0,startindex);
+           url = input.substring(startindex+6, secondindex);
+           url1 = url.substring(url.indexOf("//") + 2);
+           inputdomain = url1.substring(0, url1.indexOf("/"));
+           if (document.domain == inputdomain) {
+               secondpart = "<a target='_blank' href='" + url + "'>link</a>";
+           }
+           else {
+               secondpart = "<a class=\"external_link\" title=\"external link, take care\" target='_blank' href='" + url + "'>link</a>";
+           }
+           thirdpart = input.substring(secondindex);
+           input = firstpart + secondpart + thirdpart;
+    
+        }
+        return input;
+    }
+
+     function convert_emoticons_to_images(input) {
+        var emoticons = [];
+        emoticons[0] = {key: ":-)", path: "Face-smile.svg"};
+        emoticons[1] = {key: ":-|", path: "Face-plain.svg"};
+        emoticons[2] = {key: ":-(", path: "Face-sad.svg"};
+        emoticons[3] = {key: ";-)", path: "Face-wink.svg"};
+        emoticons[4] = {key: ":-O", path: "Face-surprise.svg"};
+        emoticons[5] = {key: ":-D", path: "Face-grin.svg"};
+        emoticons[6] = {key: ":$", path: "Face-blush.svg"};
+        for (i = 0; i < emoticons.length; i++) {
+            input = input.split(emoticons[i].key).join("<img src=\"emoti/" + emoticons[i].path + "\" width=\"18px;\" alt=\"" + emoticons[i].key + "\">");
+        }
+        return input;
+     }
+
+     function convert_images_and_links_and_emoticons(input) {
+         input = convert_links_to_html(input);
+         input = convert_images_to_html(input);
+         input = convert_emoticons_to_images(input);
          return input;
      }
      
@@ -146,7 +170,7 @@
     function display_received_message(message_text) {
         fromuser = message_text.split(">")[0].split(" ")[1];
         message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        message_text = convert_images_and_links(message_text);
+        message_text = convert_images_and_links_and_emoticons(message_text);
         document.getElementById('messages').innerHTML = "<p id=\"message" + last_message_id +"\" style=\"color: " + userColors[fromuser] +"\">" + message_text + "</p>" + document.getElementById('messages').innerHTML;
         notify(message_text);
         last_message_id++;
@@ -159,7 +183,7 @@
     function display_current_RTC_message(message_text) {
         from = message_text.split(" ")[0];
         message_text = message_text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        message_text = convert_images_and_links(message_text);
+        message_text = convert_images_and_links_and_emoticons(message_text);
         if (ignoreList.indexOf(from) ==  -1 ) {
             document.getElementById('RTCmessage').innerHTML = message_text;
         }
