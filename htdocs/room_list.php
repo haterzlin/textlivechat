@@ -7,6 +7,7 @@
   </head>
   <body>
   <h1>Room list</h1>
+    <menu><li><a href="room_create.php">New</a><li><a href="room_list_historical.php">History</a></menu>
     <table>
       <tr><th>name</th><th>description</th><th>users</th></tr>
 <?php
@@ -39,7 +40,6 @@ foreach ($rooms as $name => $usernames) {
 ?>
     </table>
 
-  <p><a href="room_list_historical.php">Room history</a></p>
   </body>
 </html>
 
