@@ -30,6 +30,7 @@ export LANG=`grep LANG $CONFIG_FILE |head -1 |cut -f2 -d"="`
 BASE_DIR=`grep BASE_DIR $CONFIG_FILE |head -1 |cut -f2 -d"="`
 ROOMS_DIR=${BASE_DIR}/rooms
 USERS_DIR=${BASE_DIR}/users
+SESSIONS_DIR=${BASE_DIR}/sessions
 AUTH_LOG_FILE=${BASE_DIR}/log/authentization.log
 LAST_MESSAGES=20
 
@@ -58,8 +59,13 @@ function lastUserNumber() {
 ROOM=`echo "${PATH_INFO}" |cut -f2 -d"/"|tr " " "-"|tr "_" "-"`
 ROOM_LOG=${ROOMS_DIR}/${ROOM}.log
 
-COOKIES=`env|grep "HTTP_COOKIE"`
-USER=`python3 ${BASE_DIR}/py/authenticate.py "${COOKIES}"`
+#COOKIES=`env|grep "HTTP_COOKIE"`
+#USER=`python3 ${BASE_DIR}/py/authenticate.py "${COOKIES}"`
+SESSION_FILE=`env|grep "HTTP_COOKIE"|cut -f2- -d"="|tr ';' '\n'|grep PHPSESS |tail -1 |cut -f2 -d"="`
+#env|grep "HTTP_COOKIE"|tr ';' '\n'|grep PHPSESS >> $AUTH_LOG_FILE
+#ls -la ${SESSIONS_DIR}/sess_${SESSION_FILE} >> $AUTH_LOG_FILE
+#cat ${SESSIONS_DIR}/sess_${SESSION_FILE} >> $AUTH_LOG_FILE
+USER=`cat ${SESSIONS_DIR}/sess_${SESSION_FILE} | cut -f2 -d'"'`
 if [ "${USER}" == "" ]; then
   USER="Anonymous:Gray"
 fi

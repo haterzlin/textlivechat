@@ -89,11 +89,11 @@
            url = input.substring(startindex+7, secondindex);
            url1 = url.substring(url.indexOf("//") + 2);
            inputdomain = url1.substring(0, url1.indexOf("/"));
-           if (document.domain == inputdomain) {
+           if ((url.indexOf("//")) == -1 || (document.domain == inputdomain)) {
                secondpart = "<img src='" + url + "'>";
            }
            else {
-               secondpart = "<a class=\"external_image\" title=\"exter    nal image, take care\" target='_blank' href='" + url + "'>external image</a>    ";
+               secondpart = "<a class=\"external_image\" title=\"external image, take care\" target=\"_blank\" href=\"" + url + "\">external image</a>    ";
            }
            thirdpart = input.substring(secondindex);
            input = firstpart + secondpart + thirdpart;
@@ -112,11 +112,11 @@
            url = input.substring(startindex+6, secondindex);
            url1 = url.substring(url.indexOf("//") + 2);
            inputdomain = url1.substring(0, url1.indexOf("/"));
-           if (document.domain == inputdomain) {
+           if ((url.indexOf("//")) == -1 || (document.domain == inputdomain)) {
                secondpart = "<a target='_blank' href='" + url + "'>link</a>";
            }
            else {
-               secondpart = "<a class=\"external_link\" title=\"external link, take care\" target='_blank' href='" + url + "'>link</a>";
+               secondpart = "<a class=\"external_link\" title=\"external link, take care\" target=\"_blank\" href=\"" + url + "\">link</a>";
            }
            thirdpart = input.substring(secondindex);
            input = firstpart + secondpart + thirdpart;
