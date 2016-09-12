@@ -328,7 +328,7 @@
     
   function sendNotification(message) {
     if (document.hidden) {
-      var n = new Notification("New chat message", { body: message.substring(13,53) + "..." });
+      var n = new Notification("New chat message", { body: message.substring(11,53) + "..." });
       setTimeout(n.close.bind(n), 5000);
     }
   }
