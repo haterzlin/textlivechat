@@ -1,2 +1,1 @@
-- change color button is not same in firefox and chrome
-- move change_color to config and add show_notifications and show_livechat
+- maybe move change_color to config and add show_notifications and show_livechat

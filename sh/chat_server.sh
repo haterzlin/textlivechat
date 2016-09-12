@@ -9,12 +9,12 @@
 # cat /etc/logrotate.d/websocketd_chat_server
 # /var/log/websocketd/rooms/*.log {
 #   daily
+#   ifempty
 #   missingok
 #   rotate 7
-#   compress
-#   delaycompress
-#   notifempty
+#   nocompress
 #   copytruncate
+#   dateext
 # }
 #
 # then apparmor needs permission for this program to write to BASE_DIR
