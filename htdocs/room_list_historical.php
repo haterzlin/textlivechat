@@ -14,7 +14,6 @@ session_start();
   <h1>Room history</h1>
     <menu><li><a href="room_create.php">New</a><li><a href="room_list.php">List</a><li><a href="set_username.php">Username</a></menu>
 <?php
-$config=parse_ini_file("/app/iwad/conf/websocket_chat_server.ini", true);
 $roomsdir = scandir($config["global"]["BASE_DIR"]."/rooms");
 echo "<table>";
 echo "<tr><th>Name</th><th>Size (bytes)</th></tr>\n";

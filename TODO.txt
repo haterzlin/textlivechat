@@ -1,1 +1,3 @@
 - maybe move change_color to config and add show_notifications and show_livechat
+- make session cookie name configurable
+- make number of last messages displayed at room entering configurable

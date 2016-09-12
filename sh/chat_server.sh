@@ -1,30 +1,7 @@
 #!/bin/bash
 # Requires: https://github.com/joewalnes/websocketd
-# Chat server
-# messages are logged to ROOMS_DIR/room.log file and user list are files inUSERS_DIR/room_username
-#
-# For proper functionality rotation of room logs is nessesary
-#
-# logrotate example
-# cat /etc/logrotate.d/websocketd_chat_server
-# /var/log/websocketd/rooms/*.log {
-#   daily
-#   ifempty
-#   missingok
-#   rotate 7
-#   nocompress
-#   copytruncate
-#   dateext
-# }
-#
-# then apparmor needs permission for this program to write to BASE_DIR
-#
-# run with 
-# PORT=8080
-#/path/to/websocketd --port=${PORT} /path/to/chat_server.sh
 
 # variables
-#BASE_DIR=/app/iwad/websocket_chat_server
 CONFIG_FILE=/home/chat/conf/websocket_chat_server.ini
 export LANG=`grep LANG $CONFIG_FILE |head -1 |cut -f2 -d"="`
 BASE_DIR=`grep BASE_DIR $CONFIG_FILE |head -1 |cut -f2 -d"="`
