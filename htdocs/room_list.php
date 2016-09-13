@@ -12,7 +12,7 @@ session_start();
   </head>
   <body>
   <h1>Room list</h1>
-  <menu><li><a href="room_create.php">New</a><li><a href="room_list_historical.php">History</a><li><a href="set_username.php">Username</a></menu>
+  <menu><li><a href="room_create.php">New</a><li><a href="room_list_historical.php">History</a><li><a href="userconfig.php">Config</a></menu>
     <table>
       <tr><th>name</th><th>description</th><th>users</th></tr>
 <?php

@@ -12,7 +12,7 @@ session_start();
   </head>
   <body>
   <h1>Room history</h1>
-    <menu><li><a href="room_create.php">New</a><li><a href="room_list.php">List</a><li><a href="set_username.php">Username</a></menu>
+    <menu><li><a href="room_create.php">New</a><li><a href="room_list.php">List</a><li><a href="userconfig.php">Config</a></menu>
 <?php
 $roomsdir = scandir($config["global"]["BASE_DIR"]."/rooms");
 echo "<table>";
