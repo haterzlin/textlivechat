@@ -14,12 +14,12 @@ logrotate example
 cat /etc/logrotate.d/websocketd_chat_server
 /var/log/websocketd/rooms/*.log {
    daily
-   ifempty
    missingok
-   rotate 7
    nocompress
+   notifempty
    copytruncate
    dateext
+   maxage 7
 }
 
 then apparmor needs permission for this program to write to 
