@@ -1,6 +1,6 @@
 <?php
 $config=parse_ini_file("/path/to/conf/websocket_chat_server.ini", true);
-session_save_path($config["base_dir"]."/sessions");
+session_save_path($config["global"]["BASE_DIR"]."/sessions");
 session_start();
 ?>
 <!DOCTYPE html>

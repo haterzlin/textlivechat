@@ -33,9 +33,11 @@ sudo -u www-data /path/to/bin/websocketd --address=127.0.0.1 --port=8089 bash /p
 run chat server with SSL as root:
 sudo -u www-data /path/to/bin/websocketd --address=127.0.0.1 --port=8089 --ssl --sslkey=/path/to/.ssl/key.pem --sslcert=/path/to/.ssl/cert.pem bash /path/to/sh/chat_server.sh >/path/to/log/websocketd_chat.log &
 
-apache2-websocket redirect vi proxy_wstunnel mod (and ssl mod if you want ssl)
+apache2-websocket redirect via proxy_wstunnel mod (and ssl mod if you want ssl)
 
 ProxyPass "/chat/rooms/" "wss://localhost:8089/"
+
+Stun server is needed for ice candidates to enable webrtc.
 
 Config
 ==
