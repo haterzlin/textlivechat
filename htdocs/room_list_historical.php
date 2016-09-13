@@ -15,6 +15,10 @@ session_start();
   <menu><li><a href="room_create.php">New</a><li><a href="room_list.php">List</a><li><a href="userconfig.php">Config</a></menu>
 <?php
 $roomsdir = scandir($config["global"]["BASE_DIR"]."/rooms");
+usort($roomsdir, function($a, $b) {
+    global $config;
+    return filemtime($config["global"]["BASE_DIR"]."/rooms/".$a) < filemtime($config["global"]["BASE_DIR"]."/rooms/".$b);
+});
 echo "<table>";
 echo "<tr><th>Name</th><th>Size (bytes)</th><th>Last modify</th></tr>\n";
 foreach ($roomsdir as $value) {
