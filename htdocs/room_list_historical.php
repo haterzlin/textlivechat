@@ -22,9 +22,9 @@ usort($roomsdir, function($a, $b) {
 echo "<table>";
 echo "<tr><th>Name</th><th>Size (bytes)</th><th>Last modify</th></tr>\n";
 foreach ($roomsdir as $value) {
-    if (is_file($config["global"]["BASE_DIR"]."/rooms/".$value)) {
-        echo "<tr><td><a href=\"room_history.php?file=".$value."\">".$value."</a></td><td>".filesize($config["global"]["BASE_DIR"]."/rooms/".$value)."</td><td>".date("Y-m-d H:s", filemtime($config["global"]["BASE_DIR"]."/rooms/".$value))."</td></tr>\n";
-    }
+    if (is_file($config["global"]["BASE_DIR"]."/rooms/".$value))  
+        if (filesize($config["global"]["BASE_DIR"]."/rooms/".$value) > 0)
+            echo "<tr><td><a href=\"room_history.php?file=".$value."\">".$value."</a></td><td>".filesize($config["global"]["BASE_DIR"]."/rooms/".$value)."</td><td>".date("Y-m-d H:s", filemtime($config["global"]["BASE_DIR"]."/rooms/".$value))."</td></tr>\n";
 }
 echo "</table>";
 ?>
