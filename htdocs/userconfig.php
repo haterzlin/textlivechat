@@ -1,7 +1,5 @@
 <?php
-$config=parse_ini_file("/app/iwad/conf/websocket_chat_server.ini", true);
-session_save_path($config["global"]["BASE_DIR"]."/sessions");
-session_start();
+require_once("header.php");
 $username = "";
 $color = "black";
 $message = "";
@@ -29,8 +27,8 @@ if (isset($_SESSION["username"])) {
   </head>
   <body>
   <h1>User config</h1>
-    <menu><li><a href="room_create.php">New</a><li><a href="room_list.php">List</a><li><a href="room_list_historical.php">History</a></menu>
 <?php
+include("menu.php");
 if ($message != "")
   echo "<p class=\"INFO\">".$message."</p>";
 ?>

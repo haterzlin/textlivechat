@@ -1,7 +1,5 @@
 <?php
-$config=parse_ini_file("/path/to/conf/websocket_chat_server.ini", true);
-session_save_path($config["global"]["BASE_DIR"]."/sessions");
-session_start();
+require_once("header.php");
 ?>
 <!DOCTYPE html>
 <html>
@@ -12,8 +10,8 @@ session_start();
   </head>
   <body>
   <h1>Room history</h1>
-  <menu><li><a href="room_create.php">New</a><li><a href="room_list.php">List</a><li><a href="userconfig.php">Config</a></menu>
 <?php
+include("menu.php");
 $roomsdir = scandir($config["global"]["BASE_DIR"]."/rooms");
 usort($roomsdir, function($a, $b) {
     global $config;

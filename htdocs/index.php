@@ -1,3 +1,6 @@
+<?php
+require_once("header.php");
+?>
 <!DOCTYPE html>
 <html>
   <head>
@@ -14,6 +17,10 @@ living instance of chat server.
 Variable number of old messages can be set, to view more history.
 User name and room name is set by http parameters user and room
 -->
+<?php
+include("menu.php");
+?>
+
     <div id="userlist"></div>
     <div id="RTCmessage"></div>
     <div id="messages"></div>
@@ -43,9 +50,6 @@ User name and room name is set by http parameters user and room
         </form>
     </div>
 
-<?php
-$config=parse_ini_file("/app/iwad/conf/websocket_chat_server.ini", true);
-?>
     <script type="text/javascript">
     var ice_url = '<?php echo $config["global"]["ICE_SERVER_DNS"]; ?>';
     var ws_url = '<?php echo $config["global"]["WEBSOCKETD_SERVER_URL"]; ?>' + get_http_param('room');

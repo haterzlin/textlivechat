@@ -2,7 +2,7 @@
 # Requires: https://github.com/joewalnes/websocketd
 
 # variables
-CONFIG_FILE=/home/chat/conf/websocket_chat_server.ini
+CONFIG_FILE=/etc/opt/websocketd_with_webrtc_chat.ini
 export LANG=`grep LANG $CONFIG_FILE |head -1 |cut -f2 -d"="`
 BASE_DIR=`grep BASE_DIR $CONFIG_FILE |head -1 |cut -f2 -d"="`
 ROOMS_DIR=${BASE_DIR}/rooms
@@ -39,6 +39,7 @@ ROOM_LOG=${ROOMS_DIR}/${ROOM}.log
 #COOKIES=`env|grep "HTTP_COOKIE"`
 #USER=`python3 ${BASE_DIR}/py/authenticate.py "${COOKIES}"`
 SESSION_FILE=`env|grep "HTTP_COOKIE"|cut -f2- -d"="|tr ';' '\n'|grep PHPSESS |tail -1 |cut -f2 -d"="`
+#env|grep -i cookie >> $AUTH_LOG_FILE
 #env|grep "HTTP_COOKIE"|tr ';' '\n'|grep PHPSESS >> $AUTH_LOG_FILE
 #ls -la ${SESSIONS_DIR}/sess_${SESSION_FILE} >> $AUTH_LOG_FILE
 #cat ${SESSIONS_DIR}/sess_${SESSION_FILE} >> $AUTH_LOG_FILE
@@ -57,7 +58,7 @@ if [[ $(roomUsers) == *"${USER}"* ]]; then
   fi
 fi
 
-echo `date +"%Y-%m-%d_%H:%M:%S"` ${REMOTE_ADDR} ${USER} >> ${AUTH_LOG_FILE}
+echo `date +"%Y-%m-%d_%H:%M:%S"` ${HTTP_X_FORWARDED_FOR} ${USER} >> ${AUTH_LOG_FILE}
 
 echo "${COLOR}" > ${USERS_DIR}/${ROOM}_${USER} # create file and send user color to it
 echo "$(givedate) ${USER} joined the ${ROOM}" >> ${ROOM_LOG}
@@ -82,7 +83,8 @@ while read MSG; do
     echo "$(givedate) Userlist: $(roomUsers)" >> ${ROOM_LOG}
   fi
   if [ "`echo ${MSG} |cut -c1`" == "/" ]; then
-    MSG=`python ${BASE_DIR}/py/parse_command.py ${MSG}`
+    MSG=`python3 ${BASE_DIR}/py/parse_command.py ${MSG}`
   fi
   echo "$(givedate) ${USER}> ${MSG}" >> ${ROOM_LOG};
 done
+
