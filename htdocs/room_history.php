@@ -12,6 +12,7 @@ echo "    <title>Room history - ".htmlentities($_GET["file"])."</title>";
   </head>
   <body>
 <?php
+
 echo "  <h1>Room history - ".htmlentities($_GET["file"])."</h1>";
 include("menu.php");
 $roomsdir = scandir($config["global"]["BASE_DIR"]."/rooms");
@@ -25,12 +26,17 @@ if (in_array($_GET["file"], $roomsdir)) {
         strpos($line, "\"type\":\"answer\",\"sdp\":\"v=0") == false and
         strpos($line, "{\"candidate\":\"candidate:") == false
        ) {
-          echo "<p>".htmlentities($line)."</p>";
+           $words = explode(" ", $line);
+           if (isset($words[2]) && $words[2][strlen($words[2])-1] == ":")
+               echo "<p>".htmlentities($words[0])." ".htmlentities(substr($words[1], 0, -1))." whispers something to ".htmlentities(substr($words[2], 0, -1))."</p>";
+           else
+                echo "<p>".htmlentities($line)."</p>";
+
     }
   } 
 }
 else {
-  header("Location: room_list_historical.php");
+    header("Location: room_list_historical.php");
 }
 
 ?>
