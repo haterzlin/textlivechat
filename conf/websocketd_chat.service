@@ -1,0 +1,12 @@
+[Unit]
+Description=websocketd chat
+
+[Service]
+User=www-data
+Type=simple
+ExecStart=/opt/chat/bin/websocketd --address=127.0.0.1 --port=8089 --ssl --sslkey=/opt/chat/.ssl/chat.key --sslcert=/opt/chat/.ssl/chat.pem bash /opt/chat/sh/chat_server.sh
+ExecStopPost=find /opt/chat/users/ -type f -exec rm {} \;
+
+[Install]
+WantedBy=multi-user.target
+
