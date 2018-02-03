@@ -27,7 +27,12 @@ $ cp -r /source/sh /opt/chat
 
 # change dir of config file to CONFIG_FILE=/etc/opt/websocketd_with_webrtc_chat.ini in chat_server.sh
 
-$ cp /source/bin/websocketd /opt/chat/bin
+$ mkdir /opt/chat/bin
+$ cd /opt/chat/bin
+$ wget https://github.com/joewalnes/websocketd/releases/download/v0.3.0/websocketd-0.3.0-linux_amd64.zip
+$ unzip websocketd-0.3.0-linux_amd64.zip
+$ rm websocketd-0.3.0-linux_amd64.zip CHANGES LICENSE README.md
+$ cd -
 
 $ cp -r /source/htdocs/* /var/www/html
 $ rm /var/www/html/index.html 
@@ -38,8 +43,8 @@ $ chmod 600 /etc/ssl/private/chat-key.pem /etc/ssl/private/web-key.pem
 $ chown www-data:www-data /etc/ssl/private/chat-key.pem /etc/ssl/private/web-key.pem
 
 $ vi /etc/apache2/sites-available/default-ssl.conf
-                SSLCertificateFile      /etc/ssl/private/web-key.pem
-                SSLCertificateKeyFile /etc/ssl/certs/web-cert.pem
+                SSLCertificateFile      /etc/ssl/certs/web-cert.pem
+                SSLCertificateKeyFile /etc/ssl/private/web-key.pem
                 SSLProxyEngine On
                 ProxyPass "/rooms/" "wss://localhost:8089/"
 
@@ -64,7 +69,8 @@ $ chmod u+x /opt/chat/bin/*
 
 $ service apache2 restart
 $ chown -R www-data:www-data /opt/chat
-$ sudo -u www-data /opt/chat/sh/start-ssl.sh
+$ useradd -g ssl-cert www-data
+$ sudo -u www-data /opt/chat/sh/start-ssl.sh &
 
 $ vi /etc/logrotate.d/websocketd_chat
 /opt/chat/rooms/*.log {
